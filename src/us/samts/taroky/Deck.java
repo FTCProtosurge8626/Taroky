@@ -2,7 +2,7 @@ package us.samts.taroky;
 
 import java.util.ArrayList;
 public class Deck {
-    private ArrayList<Card> deck = new ArrayList<>();
+    private final ArrayList<Card> deck = new ArrayList<>();
     public Deck() {
         ArrayList<Card> standard = new ArrayList<>();
         for (int i=1;i<55;i++) {
@@ -57,10 +57,13 @@ public class Deck {
     public Card getCard(int location) {
         return deck.get(location);
     }
+    public ArrayList<Card> getDeck() {
+        return deck;
+    }
     public String toString() {
-        String s = "[";
+        StringBuilder s = new StringBuilder("[");
         for (Card c: deck) {
-            s += c.toString() + ", ";
+            s.append(c.toString()).append(", ");
         }
         return s.substring(0,s.length()-2) + "]";
     }
