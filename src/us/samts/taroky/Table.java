@@ -1,29 +1,31 @@
 package us.samts.taroky;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Scanner;
 
 public class Table {
     private final Player[] players;
     private int dealer;
     private Player leader;
+    private Player povenost;
     private int leaderLocation;
     private Deck deck;
     private ArrayList<Card> talon;
     private ArrayList<Player> team1;
     private ArrayList<Player> team2;
     Scanner s;
-    private int waitTime;
+    private final int waitTime;
     private static boolean print;
     private static int numGames;
+    private int doublers;
+    private int pDoublers;
 
-    public Table() throws InterruptedException {
+    public Table() {
         players = new Player[4];
-        players[0] = new Robot();
-        players[1] = new Robot(2);
-        players[2] = new Robot(3);
-        players[3] = new Robot(4);
+        players[0] = new Robot("I");
+        players[1] = new Robot("Don't");
+        players[2] = new Robot("Care");
+        players[3] = new Robot("PLAY A GAME");
         deck = new Deck();
         talon = new ArrayList<>();
         team1 = new ArrayList<>();
@@ -32,15 +34,32 @@ public class Table {
         waitTime = 0;
         print = false;
         numGames = 0;
+        doublers = 0;
+        pDoublers = 0;
     }
     public void startGame() throws InterruptedException {
         //Used for first round and as a future runner
         roundHandler(true);
         hand(preverCheck());
+        int[] previousChips = new int[4];
+        for (int i=0;i<4;i++) {
+            previousChips[i] = players[i].getChips();
+        }
         do {
             resetTable();
             numGames++;
-            if (numGames%10000==0) {System.out.println("Game " + numGames + " results: " + players[0] + " " + players[0].getChips() + ", "+ players[1] + " " + players[1].getChips() + ", "+ players[2] + " " + players[2].getChips() + ", " + players[3] + " " + players[3].getChips());}
+            if (numGames%1000==0) {
+                System.out.println("Game " + numGames + " results: " + players[0] + " " + players[0].getChips() + ", "+ players[1] + " " + players[1].getChips() + ", "+ players[2] + " " + players[2].getChips() + ", " + players[3] + " " + players[3].getChips());
+                for (int i = 0;i < 4; i++) {
+                    if (previousChips[i] > players[i].getChips()) {
+                        System.out.print("\u001B[31mDown   ");
+                    } else {
+                        System.out.print("\u001B[32mUp   ");
+                    }
+                    previousChips[i] = players[i].getChips();
+                }
+                System.out.println("\u001B[0m");
+            }
             roundHandler(false);
             hand(preverCheck());
             if (print) {System.out.println("Another round? (y/n)");}
@@ -74,6 +93,7 @@ public class Table {
             deck = players[dealer].shuffleDeck(deck);
             players[dealer].deal(cut(), this);
         }
+        povenost = leader;
         Thread.sleep(waitTime);
         if (print) {System.out.println(leader + " is Povenost");}
         Thread.sleep(waitTime);
@@ -110,11 +130,13 @@ public class Table {
                 tempTalon.add(talon.remove(0));
                 tempTalon.add(talon.remove(0));
                 tempTalon.add(talon.remove(0));
+                pDoublers++;//Double winnings only if prever loses
                 if (!players[prever].preverTalon(this)) {
                     if (prever!=leaderLocation) {
                         leader.setWinnings(talon);
                         talon = new ArrayList<>();
                         talon.addAll(tempTalon);
+                        pDoublers++;//Double winnings again only if prever loses
                     }
                 }
             }
@@ -136,7 +158,6 @@ public class Table {
             partner=leader.determinePartner();
             if (print) {System.out.println("Povenost (" + leader + ") is playing with " + partner + "\n");}
             for (int i=0;i<4;i++) {
-                System.out.println(players[i] + "  " + players[i].hasCard(partner) + " " +  !players[i].equals(leader));
                 if (players[i].hasCard(partner) && !players[i].equals(leader)) {
                     team1.add(players[i]);
                 } else if (!players[i].equals(leader)) {
@@ -147,6 +168,7 @@ public class Table {
         Thread.sleep(waitTime);
         //Check for money cards
         pointCards();
+        fleck();
         return prever > -1;
     }
     public void hand(boolean prever) throws InterruptedException {
@@ -163,45 +185,71 @@ public class Table {
         if (print) {System.out.println("Povenost's team won " + team1Points + " points");}
         if (prever) {
             boolean team1pays;
-            if (team1Points > 52) {
+            if (team1Points > 53) {
                 team1Points -= 53;
                 team1Points += 10;
                 team1Points *= 3;
                 team1Points = (int) Math.round((double) team1Points / 10);
-                team1pays = false;
+                team1pays = true;
             } else {
+                team1Points = 53 - team1Points;
                 team1Points += 10;
                 team1Points *= 3;
                 team1Points = (int) Math.round((double) team1Points / 10);
-                team1pays = true;
+                team1pays = false;
             }
-            if (team1pays) {
-                for (Player p : team1) {
-                    allPay(p, team1Points);
+            team1Points *= (int) Math.pow(2,doublers);
+            if (team1.size() == 1) { //Pavenost is prever
+                if (team1pays) {
+                    team1Points *= Math.pow(2,pDoublers);//Double it a lot if prever loses
+                    teamPay(povenost, team2, team1Points);//Pavenost/prever pays
+                    if (print) {System.out.println("Team 2 pays: " + team1Points + " chips");}
+                } else {
+                    teamPay(povenost, team2, -team1Points);//Povenost gets paid
+                    if (print) {System.out.println("Team 1pays: " + team1Points + " chips");}
                 }
-            } else {
-                for (Player p : team2) {
-                    allPay(p, team1Points);
+            } else {//Someone else is prever
+                if (team1pays) {
+                    team1Points *= Math.pow(2,pDoublers);//Double it a lot if prever loses
+                    teamPay(team2.get(0), team1, team1Points);//Prever pays
+                    if (print) {System.out.println("Team 2 pays: " + team1Points + " chips");}
+                } else {
+                    teamPay(team2.get(0), team1, -team1Points);//Prever gets paid
+                    if (print) {System.out.println("Team 1pays: " + team1Points + " chips");}
                 }
             }
         } else {
             boolean team1pays;
-            if (team1Points > 52) {
+            if (team1Points > 53) {
                 team1Points -= 53;
                 team1Points += 10;
                 team1Points *= 2;
                 team1Points = (int) Math.round((double) team1Points / 10);
-                team1pays = false;
+                team1pays = true;
             } else {
+                team1Points = 53 - team1Points;
                 team1Points += 10;
                 team1Points *= 2;
                 team1Points = (int) Math.round((double) team1Points / 10);
-                team1pays = true;
+                team1pays = false;
             }
-            if (team1pays) {
-                teamPay(team2,team1,team1Points);
-            } else {
-                teamPay(team1,team2,team1Points);
+            team1Points *= (int) Math.pow(2,doublers);
+            if (team1.size() == 2) {
+                if (team1pays) {
+                    teamPay(team2, team1, team1Points);
+                    if (print) {System.out.println("Team 2 pays: " + team1Points + " chips");}
+                } else {
+                    teamPay(team1, team2, team1Points);
+                    if (print) {System.out.println("Team 1 pays: " + team1Points + " chips");}
+                }
+            } else if (team1.size() == 1) {//Pavenost is alone
+                if (team1pays) {
+                    teamPay(povenost, team2, team1Points);
+                    if (print) {System.out.println("Team 2 pays: " + team1Points + " chips");}
+                } else {
+                    teamPay(povenost, team2, -team1Points);
+                    if (print) {System.out.println("Team 1pays: " + team1Points + " chips");}
+                }
             }
         }
         if (print) {
@@ -211,10 +259,6 @@ public class Table {
         }
         if (team1.size() + team2.size() != 4) {
             System.out.println("Less than 4 players!");
-        }
-        if (team1.size() != 2) {
-            System.out.println("Team1 does not have 2 players");
-            System.out.println(team1);
         }
     }
     public void resetTable() {
@@ -231,6 +275,8 @@ public class Table {
             System.out.println("\nNEW DECK CONSTRUCTED\n");
             deck = new Deck();
         }
+        doublers = 0;
+        pDoublers = 0;
     }
     public void pointCards() {
         for (int i=0;i<4;i++) {
@@ -297,6 +343,26 @@ public class Table {
             allPay(temp, chipsOwed);
         }
     }
+    public void fleck() {
+        for (Player t2: team2) {
+            if (t2.fleck()) {
+                doublers++;
+                for (Player t1: team1) {
+                    if (t1.fleck()) {
+                        doublers++;
+                        for (Player t2t2 : team2) {
+                            if (t2t2.fleck()) {
+                                doublers++;
+                                break;
+                            }
+                        }
+                        break;
+                    }
+                }
+                break;
+            }
+        }
+    }
     public boolean someoneHas(String cardName) {
         return players[0].hasCard(cardName) || players[1].hasCard(cardName) || players[2].hasCard(cardName) || players[3].hasCard(cardName);
     }
@@ -335,18 +401,25 @@ public class Table {
             p.payChips(amount);//Everyone earns
         }
     }
+    public void teamPay(Player pay, ArrayList<Player> getPaid, int amount) {
+        //USED FOR 2V2 ONLY! NOT FOR 3V1!
+        pay.payChips(-amount*3);//One player pays
+        for (Player p: getPaid) {
+            p.payChips(amount);//3 players earn
+        }
+    }
     public Player trick(Player currentLeader) throws InterruptedException {
         ArrayList<Card> trick = new ArrayList<>();
         //First player plays a card
         trick.add(currentLeader.lead());
-        Thread.sleep(waitTime*3);
+        Thread.sleep(waitTime* 3L);
         leaderLocation = leader.equals(players[0]) ? 0 : leader.equals(players[1]) ? 1 : leader.equals(players[2]) ? 2 : 3;
         trick.add(players[playerOffset(leaderLocation,1)].takeTurn(trick.get(0).getSuit()));
-        Thread.sleep(waitTime*3);
+        Thread.sleep(waitTime* 3L);
         trick.add(players[playerOffset(leaderLocation,2)].takeTurn(trick.get(0).getSuit()));
-        Thread.sleep(waitTime*3);
+        Thread.sleep(waitTime* 3L);
         trick.add(players[playerOffset(leaderLocation,3)].takeTurn(trick.get(0).getSuit()));
-        Thread.sleep(waitTime*3);
+        Thread.sleep(waitTime* 3L);
         if (print) {System.out.print("\n");}
         boolean trumps = false;
         for (int i=0;i<4;i++) {
@@ -390,9 +463,9 @@ public class Table {
     public int playerOffset(int p1, int offset) {
         p1 += offset;
         while (p1 < 0) {
-            p1 += 4;
+            p1 += 4;//Bigger than -1
         }
-        return p1 % 4;
+        return p1 % 4;//Smaller than 4
     }
     public Deck getDeck() {
         return deck;

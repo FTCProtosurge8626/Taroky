@@ -96,6 +96,9 @@ public class Robot extends Player {
         ArrayList<Card> toDiscard = new ArrayList<>();
         while (getHand().size() > 12) {
             getWinnings().add(getHand().get(0));
+            if (getHand().get(0).getSuit()==Card.Suit.TRUMP && Table.getPrint()) {
+                System.out.println(getName() + " discarded a trump card: " + getHand().get(0));
+            }
             toDiscard.add(getHand().remove(0));
         }
         return toDiscard;
@@ -116,6 +119,9 @@ public class Robot extends Player {
     }
     public boolean preverTalon(Table t) {
         return true;
+    }
+    public boolean fleck() {
+        return false;
     }
     public Card lead() {
         if (Table.getPrint()) {System.out.println(getName() + " led the " + getHand().get(0));}
@@ -168,7 +174,7 @@ public class Robot extends Player {
         }
         for (int i=newHand.size()-1;i>=0;i--) {
             if (newHand.get(i).getSuit() == Card.Suit.TRUMP) {
-                getHand().add(0,newHand.remove(i));
+                getHand().add(newHand.remove(i));
             }
         }
         getHand().addAll(newHand);//Add missing cards

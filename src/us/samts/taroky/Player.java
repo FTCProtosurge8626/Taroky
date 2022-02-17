@@ -19,6 +19,7 @@ public abstract class Player {
     public abstract Card takeTurn(Card.Suit leadingSuit);
     public abstract String determinePartner();
     public abstract boolean preverTalon(Table t);
+    public abstract boolean fleck();
 
     public int countPoints() {
         int sum = 0;

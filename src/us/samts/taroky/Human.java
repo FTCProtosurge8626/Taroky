@@ -105,6 +105,10 @@ public class Human extends Player {
         String prever = s.nextLine();
         return prever.contains("y");
     }
+    public boolean fleck() {
+        System.out.println("Do you want to fleck? (y/n)");
+        return s.nextLine().contains("y");
+    }
     public void drawTalon(int x, Table t) {
         System.out.println(getName() + " drew " + x + " cards from the Talon");
         for (int i=0;i<x;i++) {
