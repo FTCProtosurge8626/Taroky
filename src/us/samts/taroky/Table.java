@@ -20,7 +20,7 @@ public class Table {
 
     public Table() throws InterruptedException {
         players = new Player[4];
-        players[0] = new Robot(1);
+        players[0] = new Robot();
         players[1] = new Robot(2);
         players[2] = new Robot(3);
         players[3] = new Robot(4);
@@ -97,9 +97,8 @@ public class Table {
                 }
                 break;
             }
-        }
+        }//Ask each player if they'd like to go prever
         team1.add(leader);//Povenost is always on team 1
-        //Draw from talon
         if (prever == -1) {
             //Normal game
             leader.drawTalon(4,this);
@@ -122,19 +121,22 @@ public class Table {
             players[prever].drawTalon(3,this);
             if (leaderLocation!=prever) {leader.addWinnings(talon);} else {players[playerOffset(leaderLocation,1)].addWinnings(talon);}
             //Talon is now empty
-        }
+        }//Talon
         Thread.sleep(waitTime);
         //Discard cards
         for (int i=0;i<4;i++) {
             players[i].discard();
         }
         //Announce partner
-        String partner = "";
+        String partner;
         if (prever != -1) {
             if (print) {System.out.println("Everyone is working together against " + players[prever]);}
         } else {
-            if (print) {System.out.println("Povenost (" + leader + ") is playing with " + (partner=leader.determinePartner()) + "\n");}
+            //2 teams
+            partner=leader.determinePartner();
+            if (print) {System.out.println("Povenost (" + leader + ") is playing with " + partner + "\n");}
             for (int i=0;i<4;i++) {
+                System.out.println(players[i] + "  " + players[i].hasCard(partner) + " " +  !players[i].equals(leader));
                 if (players[i].hasCard(partner) && !players[i].equals(leader)) {
                     team1.add(players[i]);
                 } else if (!players[i].equals(leader)) {
@@ -197,19 +199,22 @@ public class Table {
                 team1pays = true;
             }
             if (team1pays) {
-                for (Player p : team1) {
-                    allPay(p, -team1Points);
-                }
+                teamPay(team2,team1,team1Points);
             } else {
-                for (Player p : team2) {
-                    allPay(p, -team1Points);
-                }
+                teamPay(team1,team2,team1Points);
             }
         }
         if (print) {
             System.out.println("Team 1: " + team1);
             System.out.println("Team 2: " + team2);
             System.out.println("Results: " + players[0] + " " + players[0].getChips() + ", "+ players[1] + " " + players[1].getChips() + ", "+ players[2] + " " + players[2].getChips() + ", " + players[3] + " " + players[3].getChips());
+        }
+        if (team1.size() + team2.size() != 4) {
+            System.out.println("Less than 4 players!");
+        }
+        if (team1.size() != 2) {
+            System.out.println("Team1 does not have 2 players");
+            System.out.println(team1);
         }
     }
     public void resetTable() {
@@ -317,9 +322,18 @@ public class Table {
     }
     public void allPay(Player p, int payment) {
         for (int i = 0; i<4;i++) {
-            players[i].payChips(-payment);
+            if (!players[i].equals(p)) {players[i].payChips(-payment);}
         }
-        p.payChips(payment*4);
+        p.payChips(payment*3);
+    }
+    public void teamPay(ArrayList<Player> pay, ArrayList<Player> getPaid, int amount) {
+        //USED FOR 2V2 ONLY! NOT FOR 3V1!
+        for (Player p: pay) {
+            p.payChips(-amount);//Everyone pays
+        }
+        for (Player p: getPaid) {
+            p.payChips(amount);//Everyone earns
+        }
     }
     public Player trick(Player currentLeader) throws InterruptedException {
         ArrayList<Card> trick = new ArrayList<>();
@@ -374,7 +388,7 @@ public class Table {
         return players[playerOffset(leaderLocation,winner)];
     }
     public int playerOffset(int p1, int offset) {
-        p1 = p1 - offset;
+        p1 += offset;
         while (p1 < 0) {
             p1 += 4;
         }
