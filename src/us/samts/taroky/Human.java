@@ -194,3 +194,4 @@ public class Human extends Player {
         getHand().addAll(newHand);//Add missing cards
     }
 }
+

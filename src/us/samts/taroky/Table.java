@@ -14,33 +14,40 @@ public class Table {
     private ArrayList<Player> team1;
     private ArrayList<Player> team2;
     Scanner s;
+    private int waitTime;
+    private static boolean print;
+    private static int numGames;
 
-    public Table() {
+    public Table() throws InterruptedException {
         players = new Player[4];
-        players[0] = new Human();
-        players[1] = new Robot("Stanley");
-        players[2] = new Robot("Winston");
-        players[3] = new Robot("Darcey");
+        players[0] = new Robot(1);
+        players[1] = new Robot(2);
+        players[2] = new Robot(3);
+        players[3] = new Robot(4);
         deck = new Deck();
         talon = new ArrayList<>();
         team1 = new ArrayList<>();
         team2 = new ArrayList<>();
         s = new Scanner(System.in);
-        startGame();
+        waitTime = 0;
+        print = false;
+        numGames = 0;
     }
-    public void startGame() {
+    public void startGame() throws InterruptedException {
         //Used for first round and as a future runner
         roundHandler(true);
         hand(preverCheck());
         do {
             resetTable();
+            numGames++;
+            if (numGames%10000==0) {System.out.println("Game " + numGames + " results: " + players[0] + " " + players[0].getChips() + ", "+ players[1] + " " + players[1].getChips() + ", "+ players[2] + " " + players[2].getChips() + ", " + players[3] + " " + players[3].getChips());}
             roundHandler(false);
             hand(preverCheck());
-            System.out.println("Another round? (y/n)");
-        } while (!s.nextLine().contains("n"));
-        System.out.println("Thanks for playing! Final scores: " + players[0].getChips() + ", "+ players[1].getChips() + ", "+ players[2].getChips() + ", "+ players[3].getChips());
+            if (print) {System.out.println("Another round? (y/n)");}
+        } while (/*!s.nextLine().contains("n")*/true);
+        //System.out.println("Thanks for playing! Final scores: " + players[0].getChips() + ", "+ players[1].getChips() + ", "+ players[2].getChips() + ", "+ players[3].getChips());
     }
-    public void roundHandler(boolean roundOne) {
+    public void roundHandler(boolean roundOne) throws InterruptedException {
         if (roundOne) {
             dealer = (int) (Math.random() * 4);
             deck = players[dealer].shuffleDeck(deck);//Deal then iterate
@@ -67,9 +74,11 @@ public class Table {
             deck = players[dealer].shuffleDeck(deck);
             players[dealer].deal(cut(), this);
         }
-        System.out.println(leader + " is Povenost");
+        Thread.sleep(waitTime);
+        if (print) {System.out.println(leader + " is Povenost");}
+        Thread.sleep(waitTime);
     }
-    public boolean preverCheck() {
+    public boolean preverCheck() throws InterruptedException {
         //Used to handle the Talon and point cards. Returns true if someone plays prever. Adds players to teams as well.
         int prever = -1;//Equal to the location in the players[] of who is going prever
         for (int i=0; i<4;i++) {
@@ -114,6 +123,7 @@ public class Table {
             if (leaderLocation!=prever) {leader.addWinnings(talon);} else {players[playerOffset(leaderLocation,1)].addWinnings(talon);}
             //Talon is now empty
         }
+        Thread.sleep(waitTime);
         //Discard cards
         for (int i=0;i<4;i++) {
             players[i].discard();
@@ -121,9 +131,9 @@ public class Table {
         //Announce partner
         String partner = "";
         if (prever != -1) {
-            System.out.println("Everyone is working together against " + players[prever]);
+            if (print) {System.out.println("Everyone is working together against " + players[prever]);}
         } else {
-            System.out.println("Povenost (" + leader + ") is playing with " + (partner=leader.determinePartner()) + "\n");
+            if (print) {System.out.println("Povenost (" + leader + ") is playing with " + (partner=leader.determinePartner()) + "\n");}
             for (int i=0;i<4;i++) {
                 if (players[i].hasCard(partner) && !players[i].equals(leader)) {
                     team1.add(players[i]);
@@ -132,21 +142,23 @@ public class Table {
                 }
             }
         }
+        Thread.sleep(waitTime);
         //Check for money cards
         pointCards();
         return prever > -1;
     }
-    public void hand(boolean prever) {
+    public void hand(boolean prever) throws InterruptedException {
         //Hand is used AFTER point cards and partners. It determines play and payment after play.
         for (int i = 0; i < 12; i++) {
-            System.out.println("Trick " + (i+1) + ":");
+            if (print) {System.out.println("Trick " + (i+1) + ":");}
             leader = trick(leader);//Go through 12 tricks
         }
+        Thread.sleep(waitTime);
         int team1Points=0;//Count one team's points
         for (Player p: team1) {
             team1Points += p.countPoints();
         }
-        System.out.println("Povenost's team won " + team1Points + " points");
+        if (print) {System.out.println("Povenost's team won " + team1Points + " points");}
         if (prever) {
             boolean team1pays;
             if (team1Points > 52) {
@@ -194,9 +206,11 @@ public class Table {
                 }
             }
         }
-        System.out.println("Team 1: " + team1);
-        System.out.println("Team 2: " + team2);
-        System.out.println("Results: " + players[0] + " " + players[0].getChips() + ", "+ players[1] + " " + players[1].getChips() + ", "+ players[2] + " " + players[2].getChips() + ", " + players[3] + " " + players[3].getChips());
+        if (print) {
+            System.out.println("Team 1: " + team1);
+            System.out.println("Team 2: " + team2);
+            System.out.println("Results: " + players[0] + " " + players[0].getChips() + ", "+ players[1] + " " + players[1].getChips() + ", "+ players[2] + " " + players[2].getChips() + ", " + players[3] + " " + players[3].getChips());
+        }
     }
     public void resetTable() {
         for (int i=0; i<4;i++) {
@@ -232,47 +246,47 @@ public class Table {
             switch (trumps) {
                 case 0:
                     temp.addPointCard("No trumps");
-                    System.out.println(temp.getName() + " has No Trumps, everyone pays 4");
+                    if (print) {System.out.println(temp.getName() + " has No Trumps, everyone pays 4");}
                     chipsOwed += 4;
                 case 1://falthrough
                 case 2:
                     temp.addPointCard("2 or fewer trumps");
-                    System.out.println(temp.getName() + " has 2 or less trumps, everyone pays 2");
+                    if (print) {System.out.println(temp.getName() + " has 2 or less trumps, everyone pays 2");}
                     chipsOwed += 2;
                     break;
                 case 8://fallthrough
                 case 9:
                     temp.addPointCard("Little Ones");
-                    System.out.println(temp.getName() + " has Little Ones, everyone pays 2");
+                    if (print) {System.out.println(temp.getName() + " has Little Ones, everyone pays 2");}
                     chipsOwed += 2;
                     break;
                 case 10:
                 case 11://fallthrough
                 case 12:
                     temp.addPointCard("Big ones");
-                    System.out.println(temp.getName() + " has Big Ones, everyone pays 4");
+                    if (print) {System.out.println(temp.getName() + " has Big Ones, everyone pays 4");}
                     chipsOwed += 4;
             }
             if (fiveC >= 4) {
                 if (temp.hasCard("King of Spades") && temp.hasCard("King of Clubs") && temp.hasCard("King of Hearts") && temp.hasCard("King of Diamonds")) {
                     if (fiveC > 4) {
                         temp.addPointCard("All 4 Kings+");
-                        System.out.println(temp.getName() + " has All 4 Kings +, everyone pays 6");
+                        if (print) {System.out.println(temp.getName() + " has All 4 Kings +, everyone pays 6");}
                         chipsOwed += 6;
                     } else {
                         temp.addPointCard("All 4 Kings");
-                        System.out.println(temp.getName() + " has All 4 Kings, everyone pays 4");
+                        if (print) {System.out.println(temp.getName() + " has All 4 Kings, everyone pays 4");}
                         chipsOwed += 4;
                     }
                 } else {
                     temp.addPointCard("4 5 counts");
-                    System.out.println(temp.getName() + " has 4 5 counts, everyone pays 2");
+                    if (print) {System.out.println(temp.getName() + " has 4 5 counts, everyone pays 2");}
                     chipsOwed += 2;
                 }
             }
             if (temp.hasCard("I") && temp.hasCard("XXI") && temp.hasCard("Škýz")) {
                 temp.addPointCard("Trull");
-                System.out.println(temp.getName() + " has Trull, everyone pays 2");
+                if (print) {System.out.println(temp.getName() + " has Trull, everyone pays 2");}
                 chipsOwed += 2;
             }
             allPay(temp, chipsOwed);
@@ -307,15 +321,19 @@ public class Table {
         }
         p.payChips(payment*4);
     }
-    public Player trick(Player currentLeader) {
+    public Player trick(Player currentLeader) throws InterruptedException {
         ArrayList<Card> trick = new ArrayList<>();
         //First player plays a card
         trick.add(currentLeader.lead());
+        Thread.sleep(waitTime*3);
         leaderLocation = leader.equals(players[0]) ? 0 : leader.equals(players[1]) ? 1 : leader.equals(players[2]) ? 2 : 3;
         trick.add(players[playerOffset(leaderLocation,1)].takeTurn(trick.get(0).getSuit()));
+        Thread.sleep(waitTime*3);
         trick.add(players[playerOffset(leaderLocation,2)].takeTurn(trick.get(0).getSuit()));
+        Thread.sleep(waitTime*3);
         trick.add(players[playerOffset(leaderLocation,3)].takeTurn(trick.get(0).getSuit()));
-        System.out.print("\n");
+        Thread.sleep(waitTime*3);
+        if (print) {System.out.print("\n");}
         boolean trumps = false;
         for (int i=0;i<4;i++) {
             if (trick.get(i).getSuit() == Card.Suit.TRUMP) {
@@ -351,7 +369,8 @@ public class Table {
             }
         }
         players[playerOffset(leaderLocation,winner)].winTrick(trick);
-        System.out.println(players[playerOffset(leaderLocation,winner)] + " won the trick!\n");
+        if (print) {System.out.println(players[playerOffset(leaderLocation,winner)] + " won the trick!\n");}
+        Thread.sleep(waitTime);
         return players[playerOffset(leaderLocation,winner)];
     }
     public int playerOffset(int p1, int offset) {
@@ -369,5 +388,8 @@ public class Table {
     }
     public ArrayList<Card> getTalon() {
         return talon;
+    }
+    public static boolean getPrint() {
+        return print;
     }
 }

@@ -26,14 +26,14 @@ public class Robot extends Player {
     }
 
     public Deck shuffleDeck(Deck toShuffle) {
-        System.out.println(getName() + " shuffled the deck");
+        if (Table.getPrint()) {System.out.println(getName() + " shuffled the deck");}
         for (int i=0; i<(int)(Math.random()*10 + 2);i++) {
             toShuffle.shuffle((int)(Math.random()*2+1));
         }
         return toShuffle;
     }
     public int cut() {
-        System.out.println(getName() + " cut the deck");
+        if (Table.getPrint()) {System.out.println(getName() + " cut the deck");}
         return (int)(Math.random()*20);
     }
     public void deal(int style, Table t) {
@@ -86,7 +86,7 @@ public class Robot extends Player {
         return false;
     }
     public void drawTalon(int x, Table t) {
-        System.out.println(getName() + " drew " + x + " cards from the Talon");
+        if (Table.getPrint()) {System.out.println(getName() + " drew " + x + " cards from the Talon");}
         for (int i=0;i<x;i++) {
             dealCard(t.getTalon().remove(0));
         }
@@ -118,12 +118,12 @@ public class Robot extends Player {
         return true;
     }
     public Card lead() {
-        System.out.println(getName() + " led the " + getHand().get(0));
+        if (Table.getPrint()) {System.out.println(getName() + " led the " + getHand().get(0));}
         return getHand().remove(0);
     }
     public Card takeTurn(Card.Suit leadingSuit) {
         sortHand(leadingSuit);
-        System.out.println(getName() + " played the " + getHand().get(0));
+        if (Table.getPrint()) {System.out.println(getName() + " played the " + getHand().get(0));}
         return getHand().remove(0);
     }
     public void sortHand() {
