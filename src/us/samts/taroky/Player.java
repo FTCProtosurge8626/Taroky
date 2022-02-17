@@ -6,7 +6,8 @@ public abstract class Player {
     private ArrayList<Card> hand;
     private ArrayList<Card> winnings;
     private int chips;
-    ArrayList<String> pointCards;
+    private ArrayList<String> pointCards;
+    private String name;
 
     public abstract Deck shuffleDeck(Deck toShuffle);
     public abstract int cut();
@@ -17,6 +18,7 @@ public abstract class Player {
     public abstract Card lead();
     public abstract Card takeTurn(Card.Suit leadingSuit);
     public abstract String determinePartner();
+    public abstract boolean preverTalon(Table t);
 
     public int countPoints() {
         int sum = 0;
@@ -43,9 +45,11 @@ public abstract class Player {
     public ArrayList<Card> getHand() {
         return hand;
     }
+    public String getName() {return name;}
     public void setWinnings(ArrayList<Card> newW) {
         winnings = newW;
     }
+    public void addWinnings(ArrayList<Card> toAdd) {winnings.addAll(toAdd);}
     public void setChips(int newChips) {
         chips = newChips;
     }
@@ -55,6 +59,7 @@ public abstract class Player {
     public void payChips(int payment) {
         chips += payment;
     }
+    public void setName(String newName) {name=newName;}
     public void resetPointCards() {
         pointCards = new ArrayList<>();
     }
@@ -72,5 +77,11 @@ public abstract class Player {
 
     public void winTrick(ArrayList<Card> trick) {
         winnings.addAll(trick);
+    }
+    public String toString() {
+        return name;
+    }
+    public String info() {
+        return name + ":\n" + hand +"\nchips: " + chips + "\nDiscard pile: " + winnings + "\n" + pointCards + "\n";
     }
 }

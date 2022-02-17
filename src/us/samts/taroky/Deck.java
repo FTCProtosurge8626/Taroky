@@ -60,6 +60,9 @@ public class Deck {
     public ArrayList<Card> getDeck() {
         return deck;
     }
+    public boolean deckSize() {
+        return deck.size()==54;
+    }
     public String toString() {
         StringBuilder s = new StringBuilder("[");
         for (Card c: deck) {

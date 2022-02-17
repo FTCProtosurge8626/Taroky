@@ -19,6 +19,7 @@ public class Card {
         }
         formCard();
     }
+    public int getId() {return id;}
     public int getPointValue() {
         return pointValue;
     }
