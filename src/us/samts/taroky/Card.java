@@ -1,10 +1,20 @@
 package us.samts.taroky;
 
+import javax.imageio.IIOException;
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+import java.util.Objects;
+
 public class Card {
     private final int id;
     private String name;
     private int pointValue;
     private Suit suit;
+    private BufferedImage img;
+    private static BufferedImage CARDBACK;
+
     public enum Suit {
         TRUMP,
         SPADES,
@@ -151,6 +161,23 @@ public class Card {
                 }
         }
         name = n;
+        try {
+            img = ImageIO.read(new File("/images/" + name + ".jpg"));
+        } catch (IOException ignored) {
+        }
+    }
+    public BufferedImage getImg() {
+        return img;
+    }
+    public static BufferedImage getCardBack() {
+        if (null==CARDBACK) {
+            try {
+                CARDBACK = ImageIO.read(new File("/images/TarokyBack.jpg"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        return CARDBACK;
     }
     public String toString() {
         return name;

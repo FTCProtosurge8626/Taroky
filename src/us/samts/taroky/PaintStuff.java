@@ -22,5 +22,6 @@ public class PaintStuff extends Canvas {
         g.setColor(Color.BLACK);
         g.setFont(new Font("TAHOMA",Font.BOLD,12));
         g.drawString("Samuel Mach - Taroky Time!", 50, location);
+        g.drawImage(Card.getCardBack(),0,0,null);
     }
 }

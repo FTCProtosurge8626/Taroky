@@ -44,6 +44,7 @@ public class Taroky extends JFrame {
                 beforeTime = System.currentTimeMillis();
                 while ( true ) {
                     Graphics g = bi1.getGraphics();//Create graphics buffer
+                    assert bufferStrategy != null;
                     Graphics window = bufferStrategy.getDrawGraphics();
 
                     try {
@@ -80,9 +81,10 @@ public class Taroky extends JFrame {
 
     public static void main(String[] args) throws InterruptedException
     {
-        boolean graphics = false;
-        if (graphics) {Taroky taroky = new Taroky();}
-        else {
+        boolean graphics = true;
+        if (graphics) {
+            Taroky taroky = new Taroky();
+        } else {
             Table table = new Table();
             table.startGame();
         }

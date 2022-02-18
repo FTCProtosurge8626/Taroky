@@ -63,7 +63,7 @@ public class Table {
             roundHandler(false);
             hand(preverCheck());
             if (print) {System.out.println("Another round? (y/n)");}
-        } while (/*!s.nextLine().contains("n")*/true);
+        } while (!s.nextLine().contains("n"));
         //System.out.println("Thanks for playing! Final scores: " + players[0].getChips() + ", "+ players[1].getChips() + ", "+ players[2].getChips() + ", "+ players[3].getChips());
     }
     public void roundHandler(boolean roundOne) throws InterruptedException {
