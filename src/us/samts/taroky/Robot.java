@@ -4,15 +4,36 @@ import java.util.ArrayList;
 
 public class Robot extends Player {
     public Robot() {
-
+        setName("Robot");
+        setHand(new ArrayList<>());
+        setWinnings(new ArrayList<>());
+        setChips(100);
+        resetPointCards();
     }
+    public Robot(int number) {
+        setName("Robot " + number);
+        setHand(new ArrayList<>());
+        setWinnings(new ArrayList<>());
+        setChips(100);
+        resetPointCards();
+    }
+    public Robot(String name) {
+        setName(name);
+        setHand(new ArrayList<>());
+        setWinnings(new ArrayList<>());
+        setChips(100);
+        resetPointCards();
+    }
+
     public Deck shuffleDeck(Deck toShuffle) {
+        if (Table.getPrint()) {System.out.println(getName() + " shuffled the deck");}
         for (int i=0; i<(int)(Math.random()*10 + 2);i++) {
             toShuffle.shuffle((int)(Math.random()*2+1));
         }
         return toShuffle;
     }
     public int cut() {
+        if (Table.getPrint()) {System.out.println(getName() + " cut the deck");}
         return (int)(Math.random()*20);
     }
     public void deal(int style, Table t) {
@@ -65,6 +86,7 @@ public class Robot extends Player {
         return false;
     }
     public void drawTalon(int x, Table t) {
+        if (Table.getPrint()) {System.out.println(getName() + " drew " + x + " cards from the Talon");}
         for (int i=0;i<x;i++) {
             dealCard(t.getTalon().remove(0));
         }
@@ -74,6 +96,9 @@ public class Robot extends Player {
         ArrayList<Card> toDiscard = new ArrayList<>();
         while (getHand().size() > 12) {
             getWinnings().add(getHand().get(0));
+            if (getHand().get(0).getSuit()==Card.Suit.TRUMP && Table.getPrint()) {
+                System.out.println(getName() + " discarded a trump card: " + getHand().get(0));
+            }
             toDiscard.add(getHand().remove(0));
         }
         return toDiscard;
@@ -92,19 +117,24 @@ public class Robot extends Player {
         }
         return "XIX";
     }
-    public Card lead() {
-        return getHand().get(0);
+    public boolean preverTalon(Table t) {
+        return true;
     }
-
+    public boolean fleck() {
+        return false;
+    }
+    public Card lead() {
+        if (Table.getPrint()) {System.out.println(getName() + " led the " + getHand().get(0));}
+        return getHand().remove(0);
+    }
     public Card takeTurn(Card.Suit leadingSuit) {
         sortHand(leadingSuit);
-        return getHand().get(0);
+        if (Table.getPrint()) {System.out.println(getName() + " played the " + getHand().get(0));}
+        return getHand().remove(0);
     }
     public void sortHand() {
-        ArrayList<Card> newHand = new ArrayList<>();
-        for (int i=0;i<getHand().size();i++) {
-            newHand.add(getHand().remove(0));
-        }
+        ArrayList<Card> newHand = new ArrayList<>(getHand());
+        setHand(new ArrayList<>());
         for (int i=newHand.size()-1;i>=0;i--) {
             if (newHand.get(i).getSuit() == Card.Suit.SPADES && newHand.get(i).getPointValue() != 5) {
                 getHand().add(newHand.remove(i));
@@ -130,9 +160,7 @@ public class Robot extends Player {
                 getHand().add(newHand.remove(i));
             }
         }
-        for (int i=0;i<newHand.size();i++) {
-            getHand().add(newHand.remove(i));
-        }
+        getHand().addAll(newHand);//Add any missing cards
     }
     public void sortHand(Card.Suit s) {
         ArrayList<Card> newHand = new ArrayList<>();
@@ -141,7 +169,7 @@ public class Robot extends Player {
         }
         for (int i=newHand.size()-1;i>=0;i--) {
             if (newHand.get(i).getSuit() == s) {
-                getHand().add(newHand.remove(i));
+                getHand().add(0,newHand.remove(i));
             }
         }
         for (int i=newHand.size()-1;i>=0;i--) {
@@ -149,28 +177,6 @@ public class Robot extends Player {
                 getHand().add(newHand.remove(i));
             }
         }
-        for (int i=newHand.size()-1;i>=0;i--) {
-            if (newHand.get(i).getSuit() == Card.Suit.CLUBS) {
-                getHand().add(newHand.remove(i));
-            }
-        }
-        for (int i=newHand.size()-1;i>=0;i--) {
-            if (newHand.get(i).getSuit() == Card.Suit.HEARTS) {
-                getHand().add(newHand.remove(i));
-            }
-        }
-        for (int i=newHand.size()-1;i>=0;i--) {
-            if (newHand.get(i).getSuit() == Card.Suit.DIAMONDS) {
-                getHand().add(newHand.remove(i));
-            }
-        }
-        for (int i=newHand.size()-1;i>=0;i--) {
-            if (newHand.get(i).getSuit() == Card.Suit.SPADES) {
-                getHand().add(newHand.remove(i));
-            }
-        }
-        for (int i=0;i<newHand.size();i++) {
-            getHand().add(newHand.remove(i));
-        }
+        getHand().addAll(newHand);//Add missing cards
     }
 }
