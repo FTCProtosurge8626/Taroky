@@ -4,12 +4,14 @@ package us.samts.taroky;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.image.*;
-import java.awt.Component.*;
 
-public class Taroky extends JFrame {
-    private static final int WIDTH = 800;
-    private static final int HEIGHT = 600;
+public class Taroky extends JFrame implements ActionListener {
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    private static final int WIDTH = screenSize.getWidth();
+    private static final int HEIGHT = screenSize.getHeight();
     final BufferedImage bi1;
     private long DELAY = 10;
 
@@ -20,79 +22,71 @@ public class Taroky extends JFrame {
                 getLocalGraphicsEnvironment().getDefaultScreenDevice().
                 getDefaultConfiguration();
 
-
+        setAutoRequestFocus(true);
         setVisible(true);
         createBufferStrategy(2);
         setIgnoreRepaint(true);
         setSize(WIDTH,HEIGHT);
-        Table table = new Table();
         PaintStuff ps = new PaintStuff();
         getContentPane().add(ps);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         final JLabel jl = new JLabel();
         final BufferStrategy bufferStrategy = getBufferStrategy();
-
+        Graphics window = null;
         if (bufferStrategy == null) {
             System.out.println("BufferStrategy is null");
+            throw new Error("BufferStrategy is null");
         }
-
         bi1 = new BufferedImage( WIDTH, HEIGHT, BufferedImage.TYPE_INT_ARGB );
 
-        final Thread t = new Thread( new Runnable() {
-            public void run() {
-                long beforeTime, timeDiff, sleep;
-                beforeTime = System.currentTimeMillis();
-                while ( true ) {
-                    Graphics g = bi1.getGraphics();//Create graphics buffer
-                    assert bufferStrategy != null;
-                    Graphics window = bufferStrategy.getDrawGraphics();
+        Graphics g;//Create graphics buffer
 
-                    try {
-                        ps.paint(g);
-                        window.drawImage(bi1, 0, 0, null);//Draw the image to the screen
-                    } finally {
-                        g.dispose();
-                        window.dispose();
-                    }
-
-                    bufferStrategy.show();
-
-                    //Wait code, for animation
-                    timeDiff = System.currentTimeMillis() - beforeTime;
-                    sleep = DELAY - timeDiff;
-                    if (sleep < 0) {
-                        sleep = 2;
-                    }
-                    try {
-                        Thread.sleep(sleep);
-                    } catch (InterruptedException e) {
-                        String msg = String.format("Thread interrupted: %s", e.getMessage());
-                    }
-                    beforeTime = System.currentTimeMillis();
-                }
+        long beforeTime, timeDiff, sleep;
+        beforeTime = System.currentTimeMillis();
+        while ( true ) {
+            g = bi1.getGraphics();
+            window = bufferStrategy.getDrawGraphics();
+            try {
+                ps.paint(g);//Paint onto the Graphics buffer
+                //window.drawImage(bi1, 0, 0, null);//Draw the image to the screen
+                jl.setIcon(new ImageIcon(bi1));
+                getContentPane().removeAll();
+                getContentPane().add(jl);
+            } finally {
+                g.dispose();
             }
-        });
 
-        table.startGame();
-        t.start();
-        jl.setIcon( new ImageIcon( bi1 ) );
-        getContentPane().add( jl );
+            //bufferStrategy.show();
+
+            //Wait code, for animation
+            timeDiff = System.currentTimeMillis() - beforeTime;
+            sleep = DELAY - timeDiff;
+            if (sleep < 0) {
+                sleep = 2;
+            }
+            try {
+                Thread.sleep(sleep);
+            } catch (InterruptedException e) {
+                System.out.printf("Thread interrupted: %s%n", e.getMessage());
+            }
+            beforeTime = System.currentTimeMillis();
+        }
+
     }
 
     public static void main(String[] args) throws InterruptedException
     {
-        boolean graphics = true;
-        if (graphics) {
-            Taroky taroky = new Taroky();
-        } else {
-            Table table = new Table();
-            table.startGame();
-        }
+        Taroky taroky = new Taroky();
     }
     public static int width() {
         return WIDTH;
     }
     public static int height() {
         return HEIGHT;
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+
     }
 }

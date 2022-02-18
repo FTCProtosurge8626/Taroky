@@ -162,7 +162,7 @@ public class Card {
         }
         name = n;
         try {
-            img = ImageIO.read(new File("/images/" + name + ".jpg"));
+            img = ImageIO.read(Objects.requireNonNull(Card.class.getResource("/resources/images/" + name + ".jpg")));
         } catch (IOException ignored) {
         }
     }
@@ -172,7 +172,7 @@ public class Card {
     public static BufferedImage getCardBack() {
         if (null==CARDBACK) {
             try {
-                CARDBACK = ImageIO.read(new File("/images/TarokyBack.jpg"));
+                CARDBACK = ImageIO.read(Objects.requireNonNull(Card.class.getResource("/resources/images/TarokyBack.jpg")));
             } catch (IOException e) {
                 e.printStackTrace();
             }
