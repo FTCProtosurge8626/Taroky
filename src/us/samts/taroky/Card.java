@@ -161,10 +161,10 @@ public class Card {
                 }
         }
         name = n;
-        try {
-            img = ImageIO.read(Objects.requireNonNull(Card.class.getResource("/resources/images/" + name + ".jpg")));
-        } catch (IOException ignored) {
-        }
+        //try {
+            //img = ImageIO.read(Objects.requireNonNull(Card.class.getResource("/resources/images/" + name + ".jpg")));
+        //} catch (IOException ignored) {
+        //}
     }
     public BufferedImage getImg() {
         return img;

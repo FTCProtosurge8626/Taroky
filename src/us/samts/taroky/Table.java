@@ -22,17 +22,17 @@ public class Table {
 
     public Table() {
         players = new Player[4];
-        players[0] = new Robot("I");
-        players[1] = new Robot("Don't");
-        players[2] = new Robot("Care");
-        players[3] = new Robot("PLAY A GAME");
+        players[0] = new Human();
+        players[1] = new Robot("Samuel");
+        players[2] = new Robot("Daniel");
+        players[3] = new Robot("Benjamin");
         deck = new Deck();
         talon = new ArrayList<>();
         team1 = new ArrayList<>();
         team2 = new ArrayList<>();
         s = new Scanner(System.in);
-        waitTime = 0;
-        print = false;
+        waitTime = 500;
+        print = true;
         numGames = 0;
         doublers = 0;
         pDoublers = 0;

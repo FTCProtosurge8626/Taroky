@@ -9,9 +9,9 @@ import java.awt.event.ActionListener;
 import java.awt.image.*;
 
 public class Taroky extends JFrame implements ActionListener {
-    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
-    private static final int WIDTH = screenSize.getWidth();
-    private static final int HEIGHT = screenSize.getHeight();
+    static Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    private static final int WIDTH = (int) screenSize.getWidth();
+    private static final int HEIGHT = (int) screenSize.getHeight();
     final BufferedImage bi1;
     private long DELAY = 10;
 
@@ -76,7 +76,9 @@ public class Taroky extends JFrame implements ActionListener {
 
     public static void main(String[] args) throws InterruptedException
     {
-        Taroky taroky = new Taroky();
+        //Taroky taroky = new Taroky();
+        Table tab = new Table();
+        tab.startGame();
     }
     public static int width() {
         return WIDTH;
