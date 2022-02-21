@@ -8,18 +8,20 @@ public abstract class Player {
     private int chips;
     private ArrayList<String> pointCards;
     private String name;
+    private int chipModifier;
 
     public abstract Deck shuffleDeck(Deck toShuffle);
     public abstract int cut();
-    public abstract void deal(int style, ConsoleTable t);
+    public abstract void deal(int style, Table t);
     public abstract boolean goPrever();
-    public abstract void drawTalon(int x, ConsoleTable t);
+    public abstract void drawTalon(int x, Table t);
     public abstract ArrayList<Card> discard();
     public abstract Card lead();
     public abstract Card takeTurn(Card.Suit leadingSuit);
     public abstract String determinePartner();
-    public abstract boolean preverTalon(ConsoleTable t);
+    public abstract boolean preverTalon(Table t);
     public abstract boolean fleck();
+    public abstract boolean pagat();
 
     public int countPoints() {
         int sum = 0;

@@ -49,7 +49,7 @@ public class Human extends Player {
             default -> 0;
         };
     }
-    public void deal(int style, ConsoleTable t) {
+    public void deal(int style, Table t) {
         Player[] ps = t.getPlayers();
         ArrayList<Card> d = t.getDeck().getDeck();
         for (int i=0;i<6;i++) {t.getTalon().add(d.remove(0));} //Deal talon
@@ -109,14 +109,18 @@ public class Human extends Player {
         System.out.println("Do you want to fleck? (y/n)");
         return s.nextLine().contains("y");
     }
-    public void drawTalon(int x, ConsoleTable t) {
+    public boolean pagat() {
+        System.out.println("Do you want to call the I on the end? (y/n)");
+        return s.nextLine().contains("y");
+    }
+    public void drawTalon(int x, Table t) {
         System.out.println(getName() + " drew " + x + " cards from the Talon");
         for (int i=0;i<x;i++) {
             dealCard(t.getTalon().remove(0));
         }
         sortHand(Card.Suit.TRUMP);
     }
-    public boolean preverTalon(ConsoleTable t) {
+    public boolean preverTalon(Table t) {
         System.out.println("These are the showing cards: " + t.getTalon().get(0) + ", " + t.getTalon().get(1) + ", " + t.getTalon().get(2));
         System.out.println("Keep or swap? (k/s)");
         return s.nextLine().contains("k");

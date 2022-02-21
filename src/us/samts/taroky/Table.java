@@ -17,6 +17,10 @@ public abstract class Table {
     private final int waitTime;
     private int doublers;
     private int pDoublers;
+    private int IOTE;
+    private boolean wonPagat;
+    private boolean lostPagat;
+    private int pagatTeam;
 
     protected Table(int waitTime) {
         this.players = new Player[4];
@@ -29,9 +33,20 @@ public abstract class Table {
     public abstract void hand(boolean prever) throws InterruptedException;
     public abstract void pointCards();
     public abstract void fleck();
-    public abstract Player trick(Player currentLeader) throws InterruptedException;
+    public abstract Player trick(Player currentLeader, int trickNum) throws InterruptedException;
     public abstract int cut();
 
+    public void iOnTheEnd() {
+        IOTE = -1;
+        for (int i=0; i<players.length;i++) {
+            if (players[i].hasCard("I")) {
+                if (players[i].pagat()) {
+                    IOTE = i;
+                }
+                break;
+            }
+        }
+    }
     public void resetTable() {
         for (int i=0; i<4;i++) {
             deck.getDeck().addAll(players[i].getWinnings());
@@ -46,6 +61,9 @@ public abstract class Table {
             System.out.println("\nNEW DECK CONSTRUCTED\n");
             deck = new Deck();
         }
+        IOTE = -1;
+        wonPagat = false;
+        lostPagat = false;
     }
     public boolean someoneHas(String cardName) {
         return players[0].hasCard(cardName) || players[1].hasCard(cardName) || players[2].hasCard(cardName) || players[3].hasCard(cardName);
@@ -115,6 +133,10 @@ public abstract class Table {
     public int getTeam2Points() {return team2Points;}
     public int getDoublers() {return doublers;}
     public int getPDoublers() {return pDoublers;}
+    public int getIOTE() {return IOTE;}
+    public boolean getWonPagat() {return wonPagat;}
+    public boolean getLostPagat() {return lostPagat;}
+    public int getPagatTeam() {return pagatTeam;}
 
     public void setDeck(Deck d) {
         deck = d;
@@ -136,4 +158,7 @@ public abstract class Table {
     public void setTeam2Points(int t2p) {team2Points = t2p;}
     public void setDoublers(int d) {doublers = d;}
     public void setPDoublers(int p) {pDoublers = p;}
+    public void setWonPagat(boolean w) {wonPagat = w;}
+    public void setLostPagat(boolean l) {lostPagat = l;}
+    public void setPagatTeam(int pt) {pagatTeam = pt;/*Either 1 or 2*/}
 }

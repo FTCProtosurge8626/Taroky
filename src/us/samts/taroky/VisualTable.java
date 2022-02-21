@@ -37,7 +37,7 @@ public class VisualTable extends Table {
     }
 
     @Override
-    public Player trick(Player currentLeader) throws InterruptedException {
+    public Player trick(Player currentLeader, int trickNum) throws InterruptedException {
         return null;
     }
 

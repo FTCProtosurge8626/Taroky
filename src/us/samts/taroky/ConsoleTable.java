@@ -137,7 +137,7 @@ public class ConsoleTable extends Table {
         //Hand is used AFTER point cards and partners. It determines play and payment after play.
         for (int i = 0; i < 12; i++) {
             if (print) {System.out.println("Trick " + (i+1) + ":");}
-            setLeader(trick(getLeader()));//Go through 12 tricks
+            setLeader(trick(getLeader(),i));//Go through 12 tricks
         }
         Thread.sleep(getWaitTime());
         setTeam1Points(0);//Count one team's points
@@ -196,6 +196,20 @@ public class ConsoleTable extends Table {
                 team1pays = false;
             }
             setTeam1Points(getTeam1Points() *  (int) Math.pow(2,getDoublers()));
+            if (getLostPagat() || getWonPagat()) {
+                if (getPagatTeam()==0 && getIOTE() != -1) {
+                    for (Player p : getTeam1()) {
+                        //if (players[p])
+                        //Set pagatteam to whoever called the pagat
+                    }
+                }
+                //Pagat was either called or played on the last trick
+                if (getIOTE() != -1 && getWonPagat()) {
+                    //Pagat was called and won
+                } else if (getIOTE() != -1 && getLostPagat()) {
+                    //Pagat was called and lost
+                }
+            }
             if (getTeam1().size() == 2) {
                 if (team1pays) {
                     teamPay(getTeam2(), getTeam1(), getTeam1Points());
@@ -219,9 +233,8 @@ public class ConsoleTable extends Table {
             System.out.println("Team 2: " + getTeam2());
             System.out.println("Results: " + getPlayers()[0] + " " + getPlayers()[0].getChips() + ", "+ getPlayers()[1] + " " + getPlayers()[1].getChips() + ", "+ getPlayers()[2] + " " + getPlayers()[2].getChips() + ", " + getPlayers()[3] + " " + getPlayers()[3].getChips());
         }
-        if (getTeam1().size() + getTeam2().size() != 4) {
-            System.out.println("Less than 4 players!");
-        }
+        if (getTeam1().size() + getTeam2().size() != 4)
+            throw new Error("Player count is incorrect. There should be 4 players");
     }
     public void pointCards() {
         for (int i=0;i<4;i++) {
@@ -317,7 +330,7 @@ public class ConsoleTable extends Table {
             return t;
         }
     }
-    public Player trick(Player currentLeader) throws InterruptedException {
+    public Player trick(Player currentLeader, int trickNum) throws InterruptedException {
         ArrayList<Card> trick = new ArrayList<>();
         //First player plays a card
         trick.add(currentLeader.lead());
@@ -329,6 +342,35 @@ public class ConsoleTable extends Table {
         Thread.sleep(getWaitTime()* 3L);
         trick.add(getPlayers()[playerOffset(getLeaderLocation(),3)].takeTurn(trick.get(0).getSuit()));
         Thread.sleep(getWaitTime()* 3L);
+        if (trickNum == 11) {
+            setLostPagat(getIOTE() != -1);//If someone called the I then it's assumed lost unless they play it
+            for (int i=0; i<trick.size();i++) {
+                if (trick.get(i).getName().equals("I")) {
+                    for (Player p : getTeam1()) {
+                        if (getPlayers()[playerOffset(getLeaderLocation(), i)] == p) {
+                            setPagatTeam(1);//If pagat player is on team1, set pagatTeam to 1
+                        }
+                    }
+                    for (Player p : getTeam2()) {
+                        if (getPlayers()[playerOffset(getLeaderLocation(), i)] == p) {
+                            setPagatTeam(2);
+                        }
+                    }
+                    setLostPagat(false);
+                    setWonPagat(true);
+                    break;
+                }
+            }
+            if (getWonPagat()) {
+                for (Card c : trick) {
+                    if (c.getSuit() == Card.Suit.TRUMP && !c.getName().equals("I")) {
+                        setWonPagat(false);
+                        setLostPagat(true);
+                        break;
+                    }
+                }
+            }
+        }
         if (print) {System.out.print("\n");}
         boolean trumps = false;
         for (int i=0;i<4;i++) {

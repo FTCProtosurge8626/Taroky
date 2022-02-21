@@ -36,7 +36,7 @@ public class Robot extends Player {
         if (ConsoleTable.getPrint()) {System.out.println(getName() + " cut the deck");}
         return (int)(Math.random()*20);
     }
-    public void deal(int style, ConsoleTable t) {
+    public void deal(int style, Table t) {
         Player[] ps = t.getPlayers();
         ArrayList<Card> d = t.getDeck().getDeck();
         for (int i=0;i<6;i++) {t.getTalon().add(d.remove(0));} //Deal talon
@@ -85,7 +85,7 @@ public class Robot extends Player {
     public boolean goPrever() {
         return false;
     }
-    public void drawTalon(int x, ConsoleTable t) {
+    public void drawTalon(int x, Table t) {
         if (ConsoleTable.getPrint()) {System.out.println(getName() + " drew " + x + " cards from the Talon");}
         for (int i=0;i<x;i++) {
             dealCard(t.getTalon().remove(0));
@@ -117,10 +117,13 @@ public class Robot extends Player {
         }
         return "XIX";
     }
-    public boolean preverTalon(ConsoleTable t) {
+    public boolean preverTalon(Table t) {
         return true;
     }
     public boolean fleck() {
+        return false;
+    }
+    public boolean pagat() {
         return false;
     }
     public Card lead() {
