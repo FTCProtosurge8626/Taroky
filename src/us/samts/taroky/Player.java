@@ -11,14 +11,14 @@ public abstract class Player {
 
     public abstract Deck shuffleDeck(Deck toShuffle);
     public abstract int cut();
-    public abstract void deal(int style, Table t);
+    public abstract void deal(int style, ConsoleTable t);
     public abstract boolean goPrever();
-    public abstract void drawTalon(int x, Table t);
+    public abstract void drawTalon(int x, ConsoleTable t);
     public abstract ArrayList<Card> discard();
     public abstract Card lead();
     public abstract Card takeTurn(Card.Suit leadingSuit);
     public abstract String determinePartner();
-    public abstract boolean preverTalon(Table t);
+    public abstract boolean preverTalon(ConsoleTable t);
     public abstract boolean fleck();
 
     public int countPoints() {
@@ -70,6 +70,14 @@ public abstract class Player {
     public boolean hasCard(String cardName) {
         for (Card c : hand) {
             if (c.getName().equals(cardName)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean hasSuit(Card.Suit s) {
+        for (Card c : getHand()) {
+            if (c.getSuit().equals(s)) {
                 return true;
             }
         }

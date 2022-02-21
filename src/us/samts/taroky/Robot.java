@@ -26,17 +26,17 @@ public class Robot extends Player {
     }
 
     public Deck shuffleDeck(Deck toShuffle) {
-        if (Table.getPrint()) {System.out.println(getName() + " shuffled the deck");}
+        if (ConsoleTable.getPrint()) {System.out.println(getName() + " shuffled the deck");}
         for (int i=0; i<(int)(Math.random()*10 + 2);i++) {
             toShuffle.shuffle((int)(Math.random()*2+1));
         }
         return toShuffle;
     }
     public int cut() {
-        if (Table.getPrint()) {System.out.println(getName() + " cut the deck");}
+        if (ConsoleTable.getPrint()) {System.out.println(getName() + " cut the deck");}
         return (int)(Math.random()*20);
     }
-    public void deal(int style, Table t) {
+    public void deal(int style, ConsoleTable t) {
         Player[] ps = t.getPlayers();
         ArrayList<Card> d = t.getDeck().getDeck();
         for (int i=0;i<6;i++) {t.getTalon().add(d.remove(0));} //Deal talon
@@ -85,8 +85,8 @@ public class Robot extends Player {
     public boolean goPrever() {
         return false;
     }
-    public void drawTalon(int x, Table t) {
-        if (Table.getPrint()) {System.out.println(getName() + " drew " + x + " cards from the Talon");}
+    public void drawTalon(int x, ConsoleTable t) {
+        if (ConsoleTable.getPrint()) {System.out.println(getName() + " drew " + x + " cards from the Talon");}
         for (int i=0;i<x;i++) {
             dealCard(t.getTalon().remove(0));
         }
@@ -96,7 +96,7 @@ public class Robot extends Player {
         ArrayList<Card> toDiscard = new ArrayList<>();
         while (getHand().size() > 12) {
             getWinnings().add(getHand().get(0));
-            if (getHand().get(0).getSuit()==Card.Suit.TRUMP && Table.getPrint()) {
+            if (getHand().get(0).getSuit()==Card.Suit.TRUMP && ConsoleTable.getPrint()) {
                 System.out.println(getName() + " discarded a trump card: " + getHand().get(0));
             }
             toDiscard.add(getHand().remove(0));
@@ -117,19 +117,22 @@ public class Robot extends Player {
         }
         return "XIX";
     }
-    public boolean preverTalon(Table t) {
+    public boolean preverTalon(ConsoleTable t) {
         return true;
     }
     public boolean fleck() {
         return false;
     }
     public Card lead() {
-        if (Table.getPrint()) {System.out.println(getName() + " led the " + getHand().get(0));}
+        if (ConsoleTable.getPrint()) {System.out.println(getName() + " led the " + getHand().get(0));}
         return getHand().remove(0);
     }
     public Card takeTurn(Card.Suit leadingSuit) {
         sortHand(leadingSuit);
-        if (Table.getPrint()) {System.out.println(getName() + " played the " + getHand().get(0));}
+        if (hasSuit(leadingSuit) && !getHand().get(0).getSuit().equals(leadingSuit)) {
+            throw new Error("Has suit but didn't play it");
+        }
+        if (ConsoleTable.getPrint()) {System.out.println(getName() + " played the " + getHand().get(0));}
         return getHand().remove(0);
     }
     public void sortHand() {
@@ -163,17 +166,15 @@ public class Robot extends Player {
         getHand().addAll(newHand);//Add any missing cards
     }
     public void sortHand(Card.Suit s) {
-        ArrayList<Card> newHand = new ArrayList<>();
-        for (int i=0;i<getHand().size();i++) {
-            newHand.add(getHand().remove(0));
-        }
+        ArrayList<Card> newHand = new ArrayList<>(getHand());
+        setHand(new ArrayList<>());
         for (int i=newHand.size()-1;i>=0;i--) {
-            if (newHand.get(i).getSuit() == s) {
+            if (newHand.get(i).getSuit().equals(s)) {
                 getHand().add(0,newHand.remove(i));
             }
         }
         for (int i=newHand.size()-1;i>=0;i--) {
-            if (newHand.get(i).getSuit() == Card.Suit.TRUMP) {
+            if (newHand.get(i).getSuit().equals(Card.Suit.TRUMP)) {
                 getHand().add(newHand.remove(i));
             }
         }

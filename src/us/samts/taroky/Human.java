@@ -49,7 +49,7 @@ public class Human extends Player {
             default -> 0;
         };
     }
-    public void deal(int style, Table t) {
+    public void deal(int style, ConsoleTable t) {
         Player[] ps = t.getPlayers();
         ArrayList<Card> d = t.getDeck().getDeck();
         for (int i=0;i<6;i++) {t.getTalon().add(d.remove(0));} //Deal talon
@@ -109,13 +109,14 @@ public class Human extends Player {
         System.out.println("Do you want to fleck? (y/n)");
         return s.nextLine().contains("y");
     }
-    public void drawTalon(int x, Table t) {
+    public void drawTalon(int x, ConsoleTable t) {
         System.out.println(getName() + " drew " + x + " cards from the Talon");
         for (int i=0;i<x;i++) {
             dealCard(t.getTalon().remove(0));
         }
+        sortHand(Card.Suit.TRUMP);
     }
-    public boolean preverTalon(Table t) {
+    public boolean preverTalon(ConsoleTable t) {
         System.out.println("These are the showing cards: " + t.getTalon().get(0) + ", " + t.getTalon().get(1) + ", " + t.getTalon().get(2));
         System.out.println("Keep or swap? (k/s)");
         return s.nextLine().contains("k");
@@ -174,17 +175,26 @@ public class Human extends Player {
         return getHand().remove(t);
     }
     public Card takeTurn(Card.Suit leadingSuit) {
+        sortHand(leadingSuit);
         System.out.println("Which card would you like to play? (number)");
         printHand();
         int t = s.nextInt();
         s.nextLine();
+        if (t < 0 || t > getHand().size()-1) {
+            System.out.println("Please choose a number from 0 - " + getHand().size());
+            return takeTurn(leadingSuit);
+        } else if (hasSuit(leadingSuit) && !getHand().get(t).getSuit().equals(leadingSuit)) {
+            System.out.println("Please choose a " + leadingSuit);
+            return takeTurn(leadingSuit);
+        } else if (hasSuit(Card.Suit.TRUMP) && !getHand().get(t).getSuit().equals(Card.Suit.TRUMP)) {
+            System.out.println("Please play a trump");
+            return takeTurn(leadingSuit);
+        }
         return getHand().remove(t);
     }
     public void sortHand(Card.Suit s) {
-        ArrayList<Card> newHand = new ArrayList<>();
-        for (int i=0;i<getHand().size();i++) {
-            newHand.add(getHand().remove(0));
-        }
+        ArrayList<Card> newHand = new ArrayList<>(getHand());
+        setHand(new ArrayList<>());
         for (int i=newHand.size()-1;i>=0;i--) {
             if (newHand.get(i).getSuit() == s) {
                 getHand().add(0,newHand.remove(i));

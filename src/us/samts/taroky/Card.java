@@ -113,19 +113,19 @@ public class Card {
                 if (id>0) {
                     switch ((id - 22) % 8) {
                         case 0 -> {
-                            n = "Ace of ";
+                            n = id <= 38 ? "Seven of " : "Ace of ";
                             pointValue = 1;
                         }
                         case 1 -> {
-                            n = "Two of ";
+                            n = id <= 38 ? "Eight of " : "Two of ";
                             pointValue = 1;
                         }
                         case 2 -> {
-                            n = "Three of ";
+                            n = id <= 38 ? "Nine of " : "Three of ";
                             pointValue = 1;
                         }
                         case 3 -> {
-                            n = "Four of ";
+                            n = id <= 38 ? "Ten of " : "Four of ";
                             pointValue = 1;
                         }
                         case 4 -> {
@@ -161,12 +161,15 @@ public class Card {
                 }
         }
         name = n;
-        //try {
-            //img = ImageIO.read(Objects.requireNonNull(Card.class.getResource("/resources/images/" + name + ".jpg")));
-        //} catch (IOException ignored) {
-        //}
+        try {
+            img = ImageIO.read(Objects.requireNonNull(Card.class.getResource("/resources/images/" + name + ".jpg")));
+        } catch (IOException ignored) {
+        }
     }
     public BufferedImage getImg() {
+        return img;
+    }
+    public BufferedImage getImage() {
         return img;
     }
     public static BufferedImage getCardBack() {
