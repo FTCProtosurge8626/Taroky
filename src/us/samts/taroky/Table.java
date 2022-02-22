@@ -35,6 +35,7 @@ public abstract class Table {
     public abstract void fleck();
     public abstract Player trick(Player currentLeader, int trickNum) throws InterruptedException;
     public abstract int cut();
+    public abstract void message(String message);
 
     public void iOnTheEnd() {
         IOTE = -1;

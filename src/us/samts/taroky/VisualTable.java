@@ -45,4 +45,8 @@ public class VisualTable extends Table {
     public int cut() {
         return 0;
     }
+
+    public void message(String message) {
+
+    }
 }

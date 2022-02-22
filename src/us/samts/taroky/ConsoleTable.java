@@ -57,7 +57,7 @@ public class ConsoleTable extends Table {
         }
         setPovenost(getLeader());
         Thread.sleep(getWaitTime());
-        if (print) {System.out.println(getLeader() + " is Povenost");}
+        message(getLeader() + " is Povenost");
         Thread.sleep(getWaitTime());
     }
     public boolean preverCheck() throws InterruptedException {
@@ -114,11 +114,11 @@ public class ConsoleTable extends Table {
         //Announce partner
         String partner;
         if (prever != -1) {
-            if (print) {System.out.println("Everyone is working together against " + getPlayers()[prever]);}
+            message("Everyone is working together against " + getPlayers()[prever]);
         } else {
             //2 teams
             partner=getLeader().determinePartner();
-            if (print) {System.out.println("Povenost (" + getLeader() + ") is playing with " + partner + "\n");}
+            message("Povenost (" + getLeader() + ") is playing with " + partner + "\n");
             for (int i=0;i<4;i++) {
                 if (getPlayers()[i].hasCard(partner) && !getPlayers()[i].equals(getLeader())) {
                     getTeam1().add(getPlayers()[i]);
@@ -136,7 +136,7 @@ public class ConsoleTable extends Table {
     public void hand(boolean prever) throws InterruptedException {
         //Hand is used AFTER point cards and partners. It determines play and payment after play.
         for (int i = 0; i < 12; i++) {
-            if (print) {System.out.println("Trick " + (i+1) + ":");}
+            message("Trick " + (i+1) + ":");
             setLeader(trick(getLeader(),i));//Go through 12 tricks
         }
         Thread.sleep(getWaitTime());
@@ -144,7 +144,7 @@ public class ConsoleTable extends Table {
         for (Player p: getTeam1()) {
             setTeam1Points(getTeam1Points() + p.countPoints());
         }
-        if (print) {System.out.println("Povenost's team won " + getTeam1Points() + " points");}
+        message("Povenost's team won " + getTeam1Points() + " points");
         if (prever) {
             boolean team1pays;
             if (getTeam1Points() > 53) {
@@ -165,19 +165,19 @@ public class ConsoleTable extends Table {
                 if (team1pays) {
                     setTeam1Points((int) (getTeam1Points() *  Math.pow(2,getPDoublers())));//Double it a lot if prever loses
                     teamPay(getPovenost(), getTeam2(), getTeam1Points());//Pavenost/prever pays
-                    if (print) {System.out.println("Team 2 pays: " + getTeam1Points() + " chips");}
+                    message("Team 2 pays: " + getTeam1Points() + " chips");
                 } else {
                     teamPay(getPovenost(), getTeam2(), -getTeam1Points());//Povenost gets paid
-                    if (print) {System.out.println("Team 1pays: " + getTeam1Points() + " chips");}
+                    message("Team 1pays: " + getTeam1Points() + " chips");
                 }
             } else {//Someone else is prever
                 if (team1pays) {
                     setTeam1Points((int) (getTeam1Points() *  Math.pow(2,getPDoublers())));//Double it a lot if prever loses
                     teamPay(getTeam2().get(0), getTeam1(), getTeam1Points());//Prever pays
-                    if (print) {System.out.println("Team 2 pays: " + getTeam1Points() + " chips");}
+                    message("Team 2 pays: " + getTeam1Points() + " chips");
                 } else {
                     teamPay(getTeam2().get(0), getTeam1(), -getTeam1Points());//Prever gets paid
-                    if (print) {System.out.println("Team 1pays: " + getTeam1Points() + " chips");}
+                    message("Team 1pays: " + getTeam1Points() + " chips");
                 }
             }
         } else {
@@ -199,40 +199,97 @@ public class ConsoleTable extends Table {
             if (getLostPagat() || getWonPagat()) {
                 if (getPagatTeam()==0 && getIOTE() != -1) {
                     for (Player p : getTeam1()) {
-                        //if (players[p])
-                        //Set pagatteam to whoever called the pagat
+                        if (p == getPlayers()[getIOTE()]) {
+                            //Found pagat caller, now find which team s/he is on
+                            for (Player t1 : getTeam1()) {
+                                if (p==t1) {
+                                    setPagatTeam(1);
+                                }
+                            }
+                            for (Player t2 : getTeam2()) {
+                                if (p==t2) {
+                                    setPagatTeam(2);
+                                }
+                            }
+                        }
                     }
-                }
+                } //Set pagatTeam to whoever called the pagat
                 //Pagat was either called or played on the last trick
                 if (getIOTE() != -1 && getWonPagat()) {
                     //Pagat was called and won
+                    if (getPagatTeam()==1) {
+                        //Team 1 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player gets chips from all others
+                            teamPay(getPovenost(), getTeam2(), 4);
+                            message("Team 1 gets " + 4 + " chips for pagat");
+                        } else {
+                            //2 players on team 1
+                            teamPay(getTeam1(), getTeam2(), 4);
+                            message("Team 1 gets " + 4 + "  for pagat");
+                        }
+                    } else {
+                        //Team 2 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player pays chips to all others
+                            teamPay(getPovenost(), getTeam2(), -4);
+                            message("Team 1 pays: " + 4 + " chips for pagat");
+                        } else {
+                            //2 players on team 1, they get paid by team 2
+                            teamPay(getTeam2(), getTeam1(), 4);
+                            message("Team 1 pays " + 4 + " chips for pagat");
+                        }
+                    }
                 } else if (getIOTE() != -1 && getLostPagat()) {
                     //Pagat was called and lost
+                    if (getPagatTeam()==1) {
+                        //Team 1 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player gets chips from all others
+                            teamPay(getPovenost(), getTeam2(), -4);
+                            message("Team 1 pays " + 4 + " chips for pagat");
+                        } else {
+                            //2 players on team 1
+                            teamPay(getTeam1(), getTeam2(), -4);
+                            message("Team 1 pays " + 4 + "  for pagat");
+                        }
+                    } else {
+                        //Team 2 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player pays chips to all others
+                            teamPay(getPovenost(), getTeam2(), 4);
+                            message("Team 1 gets: " + 4 + " chips for pagat");
+                        } else {
+                            //2 players on team 1, they get paid by team 2
+                            teamPay(getTeam1(), getTeam2(), 4);
+                            message("Team 1 gets " + 4 + " chips for pagat");
+                        }
+                    }
+                } else {
+                    //Pagat was won or lost but not called
                 }
             }
             if (getTeam1().size() == 2) {
                 if (team1pays) {
                     teamPay(getTeam2(), getTeam1(), getTeam1Points());
-                    if (print) {System.out.println("Team 2 pays: " + getTeam1Points() + " chips");}
+                    message("Team 2 pays: " + getTeam1Points() + " chips");
                 } else {
                     teamPay(getTeam1(), getTeam2(), getTeam1Points());
-                    if (print) {System.out.println("Team 1 pays: " + getTeam1Points() + " chips");}
+                    message("Team 1 pays: " + getTeam1Points() + " chips");
                 }
             } else if (getTeam1().size() == 1) {//Pavenost is alone
                 if (team1pays) {
                     teamPay(getPovenost(), getTeam2(), getTeam1Points());
-                    if (print) {System.out.println("Team 2 pays: " + getTeam1Points() + " chips");}
+                    message("Team 2 pays: " + getTeam1Points() + " chips");
                 } else {
                     teamPay(getPovenost(), getTeam2(), -getTeam1Points());
-                    if (print) {System.out.println("Team 1pays: " + getTeam1Points() + " chips");}
+                    message("Team 1 pays: " + getTeam1Points() + " chips");
                 }
             }
         }
-        if (print) {
-            System.out.println("Team 1: " + getTeam1());
-            System.out.println("Team 2: " + getTeam2());
-            System.out.println("Results: " + getPlayers()[0] + " " + getPlayers()[0].getChips() + ", "+ getPlayers()[1] + " " + getPlayers()[1].getChips() + ", "+ getPlayers()[2] + " " + getPlayers()[2].getChips() + ", " + getPlayers()[3] + " " + getPlayers()[3].getChips());
-        }
+        message("Team 1: " + getTeam1());
+        message("Team 2: " + getTeam2());
+        message("Results: " + getPlayers()[0] + " " + getPlayers()[0].getChips() + ", "+ getPlayers()[1] + " " + getPlayers()[1].getChips() + ", "+ getPlayers()[2] + " " + getPlayers()[2].getChips() + ", " + getPlayers()[3] + " " + getPlayers()[3].getChips());
         if (getTeam1().size() + getTeam2().size() != 4)
             throw new Error("Player count is incorrect. There should be 4 players");
     }
@@ -255,47 +312,47 @@ public class ConsoleTable extends Table {
             switch (trumps) {
                 case 0:
                     temp.addPointCard("No trumps");
-                    if (print) {System.out.println(temp.getName() + " has No Trumps, everyone pays 4");}
+                    message(temp.getName() + " has No Trumps, everyone pays 4");
                     chipsOwed += 4;
                 case 1://fallthrough
                 case 2:
                     temp.addPointCard("2 or fewer trumps");
-                    if (print) {System.out.println(temp.getName() + " has 2 or less trumps, everyone pays 2");}
+                    message(temp.getName() + " has 2 or less trumps, everyone pays 2");
                     chipsOwed += 2;
                     break;
                 case 8://fallthrough
                 case 9:
                     temp.addPointCard("Little Ones");
-                    if (print) {System.out.println(temp.getName() + " has Little Ones, everyone pays 2");}
+                    message(temp.getName() + " has Little Ones, everyone pays 2");
                     chipsOwed += 2;
                     break;
                 case 10:
                 case 11://fallthrough
                 case 12:
                     temp.addPointCard("Big ones");
-                    if (print) {System.out.println(temp.getName() + " has Big Ones, everyone pays 4");}
+                    message(temp.getName() + " has Big Ones, everyone pays 4");
                     chipsOwed += 4;
             }
             if (fiveC >= 4) {
                 if (temp.hasCard("King of Spades") && temp.hasCard("King of Clubs") && temp.hasCard("King of Hearts") && temp.hasCard("King of Diamonds")) {
                     if (fiveC > 4) {
                         temp.addPointCard("All 4 Kings+");
-                        if (print) {System.out.println(temp.getName() + " has All 4 Kings +, everyone pays 6");}
+                        message(temp.getName() + " has All 4 Kings +, everyone pays 6");
                         chipsOwed += 6;
                     } else {
                         temp.addPointCard("All 4 Kings");
-                        if (print) {System.out.println(temp.getName() + " has All 4 Kings, everyone pays 4");}
+                        message(temp.getName() + " has All 4 Kings, everyone pays 4");
                         chipsOwed += 4;
                     }
                 } else {
                     temp.addPointCard("4 5 counts");
-                    if (print) {System.out.println(temp.getName() + " has 4 5 counts, everyone pays 2");}
+                    message(temp.getName() + " has 4 5 counts, everyone pays 2");
                     chipsOwed += 2;
                 }
             }
             if (temp.hasCard("I") && temp.hasCard("XXI") && temp.hasCard("Škýz")) {
                 temp.addPointCard("Trull");
-                if (print) {System.out.println(temp.getName() + " has Trull, everyone pays 2");}
+                message(temp.getName() + " has Trull, everyone pays 2");
                 chipsOwed += 2;
             }
             allPay(temp, chipsOwed);
@@ -330,6 +387,12 @@ public class ConsoleTable extends Table {
             return t;
         }
     }
+
+    @Override
+    public void message(String message) {
+        if (print) {System.out.println(message);}
+    }
+
     public Player trick(Player currentLeader, int trickNum) throws InterruptedException {
         ArrayList<Card> trick = new ArrayList<>();
         //First player plays a card
@@ -407,7 +470,7 @@ public class ConsoleTable extends Table {
             }
         }
         getPlayers()[playerOffset(getLeaderLocation(),winner)].winTrick(trick);
-        if (print) {System.out.println(getPlayers()[playerOffset(getLeaderLocation(),winner)] + " won the trick!\n");}
+        message(getPlayers()[playerOffset(getLeaderLocation(),winner)] + " won the trick!\n");
         Thread.sleep(getWaitTime());
         return getPlayers()[playerOffset(getLeaderLocation(),winner)];
     }
