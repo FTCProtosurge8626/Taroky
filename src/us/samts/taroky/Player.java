@@ -128,9 +128,28 @@ public abstract class Player {
         }
         return false;
     }
+    public boolean hasCard(int id) {
+        for (Card c : hand) {
+            if (c.getId() == id) {
+                return true;
+            }
+        }
+        return false;
+    }
     public boolean hasSuit(Card.Suit s) {
         for (Card c : getHand()) {
             if (c.getSuit().equals(s)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public boolean hasPointCards(String pc) {
+        if (pointCards.size() == 0) {
+            return false;
+        }
+        for (String s : pointCards) {
+            if (s.equals(pc)) {
                 return true;
             }
         }

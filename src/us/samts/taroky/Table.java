@@ -10,6 +10,7 @@ public abstract class Table {
     private int leaderLocation;
     private Deck deck;
     private ArrayList<Card> talon;
+    ArrayList<Card> trick;
     private ArrayList<Player> team1;
     private ArrayList<Player> team2;
     private ArrayList<Player> trickWinners;
@@ -467,12 +468,12 @@ public abstract class Table {
             }
             switch (trumps) {
                 case 0:
-                    temp.addPointCard("No trumps");
+                    temp.addPointCard("Uni");
                     message(temp.getName() + " has No Trumps, everyone pays 4");
                     chipsOwed += 4;
                 case 1://fallthrough
                 case 2:
-                    temp.addPointCard("2 or fewer trumps");
+                    temp.addPointCard("Beda");
                     message(temp.getName() + " has 2 or less trumps, everyone pays 2");
                     chipsOwed += 2;
                     break;
@@ -492,16 +493,16 @@ public abstract class Table {
             if (fiveC >= 4) {
                 if (temp.hasCard("King of Spades") && temp.hasCard("King of Clubs") && temp.hasCard("King of Hearts") && temp.hasCard("King of Diamonds")) {
                     if (fiveC > 4) {
-                        temp.addPointCard("All 4 Kings+");
+                        temp.addPointCard("Rosa Honery+");
                         message(temp.getName() + " has All 4 Kings +, everyone pays 6");
                         chipsOwed += 6;
                     } else {
-                        temp.addPointCard("All 4 Kings");
+                        temp.addPointCard("Rosa Honery");
                         message(temp.getName() + " has All 4 Kings, everyone pays 4");
                         chipsOwed += 4;
                     }
                 } else {
-                    temp.addPointCard("4 5 counts");
+                    temp.addPointCard("Honery");
                     message(temp.getName() + " has 4 5 counts, everyone pays 2");
                     chipsOwed += 2;
                 }
@@ -560,7 +561,7 @@ public abstract class Table {
         }
     }
     public Player trick(Player currentLeader, int trickNum) throws InterruptedException {
-        ArrayList<Card> trick = new ArrayList<>();
+        trick = new ArrayList<>();
         //First player plays a card
         trick.add(currentLeader.lead());
         Thread.sleep(getWaitTime()* 3L);
@@ -714,7 +715,7 @@ public abstract class Table {
             p.payChips(amount);//3 players earn
         }
     }
-    public int playerOffset(int p1, int offset) {
+    public static int playerOffset(int p1, int offset) {
         p1 += offset;
         while (p1 < 0) {
             p1 += 4;//Bigger than -1
@@ -734,6 +735,7 @@ public abstract class Table {
     public ArrayList<Card> getTalon() {
         return talon;
     }
+    public ArrayList<Card> getTrick() {return trick;}
     public ArrayList<Player> getTeam1() {
         return team1;
     }

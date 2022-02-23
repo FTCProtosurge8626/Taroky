@@ -51,7 +51,7 @@ public class AIMaker extends Table {
     * This seed can be pasted into the initialSeed variable to start off the next generation if there is a pause between runs
     *
     * Neural Network:
-    * INPUTS (A lot)
+    * INPUTS (A lot, currently 129)
     * HIDDEN 20
     * HIDDEN 20
     * OUTPUTS 11
