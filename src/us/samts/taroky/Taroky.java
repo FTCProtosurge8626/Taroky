@@ -19,9 +19,9 @@ public class Taroky extends JFrame implements WindowListener, MouseListener, Mou
     public static void main(String[] args) throws InterruptedException
     {
 
-        Taroky taroky = new Taroky();
-        //Table tab = new Table();
-        //tab.startGame();
+        //Taroky taroky = new Taroky();
+        Table tab = new ConsoleTable();
+        tab.startGame();
     }
 
     public Taroky() {

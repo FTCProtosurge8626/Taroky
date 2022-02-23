@@ -1,11 +1,9 @@
 package us.samts.taroky;
 
-import java.util.ArrayList;
-
 public class AI extends Player {
     private int[] inputs; //What information the bot has access to
     private int[][] weights; //What the bot does to the information
-    private int numOutputs = 9;
+    private int numOutputs = 11;
 
     public AI(int[][] seed, int learningFactor) {
         inputs = new int[30];
@@ -43,7 +41,7 @@ public class AI extends Player {
         }
     }
 
-    public void resetInputs() {
+    public void constructInputs() {
         //Set the inputs
         /*
         * 1-12 are cards in hand
@@ -67,23 +65,28 @@ public class AI extends Player {
     }
 
     @Override
-    public void deal(int style, Table t) {
-        //Doesn't need tbd
-    }
-
-    @Override
     public boolean goPrever() {
         return false;
     }
 
     @Override
-    public void drawTalon(int x, Table t) {
-        //Doesn't need tbd
+    public void discard() {
     }
 
-    @Override
-    public ArrayList<Card> discard() {
-        return null;
+    public String determinePartner() {
+        //Can replace "hasCard" with AI choice
+        if (!hasCard("XIX")) {
+            return "XIX";
+        } else if (!hasCard("XVIII")){
+            return "XVIII";
+        } else if (!hasCard("XVII")){
+            return "XVII";
+        } else if (!hasCard("XVI")){
+            return "XVI";
+        } else if (!hasCard("XV")){
+            return "XV";
+        }
+        return "XIX";
     }
 
     @Override
@@ -97,14 +100,8 @@ public class AI extends Player {
     }
 
     @Override
-    public String determinePartner() {
-        //Doesn't need tbd
-        return null;
-    }
-
-    @Override
     public boolean preverTalon(Table t) {
-        return false;
+        return true;
     }
 
     @Override
@@ -114,6 +111,11 @@ public class AI extends Player {
 
     @Override
     public boolean pagat() {
+        return false;
+    }
+
+    @Override
+    public boolean valat() {
         return false;
     }
 }

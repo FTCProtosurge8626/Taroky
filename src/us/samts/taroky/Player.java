@@ -12,16 +12,15 @@ public abstract class Player {
 
     public abstract Deck shuffleDeck(Deck toShuffle);
     public abstract int cut();
-    public abstract void deal(int style, Table t);
     public abstract boolean goPrever();
-    public abstract void drawTalon(int x, Table t);
-    public abstract ArrayList<Card> discard();
+    public abstract void discard();
     public abstract Card lead();
     public abstract Card takeTurn(Card.Suit leadingSuit);
     public abstract String determinePartner();
     public abstract boolean preverTalon(Table t);
     public abstract boolean fleck();
     public abstract boolean pagat();
+    public abstract boolean valat();
 
     public int countPoints() {
         int sum = 0;
@@ -30,8 +29,60 @@ public abstract class Player {
         }
         return sum;
     }
+    public void deal(int style, Table t) {
+        Player[] ps = t.getPlayers();
+        ArrayList<Card> d = t.getDeck().getDeck();
+        for (int i=0;i<6;i++) {t.getTalon().add(d.remove(0));} //Deal talon
+        while (d.size() > 0) {
+            switch (style) {
+                case 1:
+                    for (Player p : ps) {p.dealCard(d.remove(0));}
+                    break;
+                case 2:
+                    for (Player p : ps) {
+                        for (int i=0;i<2;i++) {
+                            p.dealCard(d.remove(0));
+                        }
+                    }
+                    break;
+                case 3:
+                    for (Player p : ps) {
+                        for (int i=0;i<3;i++) {
+                            p.dealCard(d.remove(0));
+                        }
+                    }
+                    break;
+                case 4:
+                    for (Player p : ps) {
+                        for (int i=0;i<4;i++) {
+                            p.dealCard(d.remove(0));
+                        }
+                    }
+                    break;
+                case 12:
+                    for (Player p : ps) {
+                        for (int i=0;i<12;i++) {
+                            p.dealCard(d.remove(0));
+                        }
+                    }
+                    break;
+                default:
+                    for (Player p : ps) {
+                        for (int i=0;i<6;i++) {
+                            p.dealCard(d.remove(0));
+                        }
+                    }
+            }
+        }
+    }
     public void dealCard(Card c) {
         hand.add(c);
+    }
+    public void drawTalon(int x, Table t) {
+        if (ConsoleTable.getPrint()) {System.out.println(getName() + " drew " + x + " cards from the Talon");}
+        for (int i=0;i<x;i++) {
+            dealCard(t.getTalon().remove(0));
+        }
     }
     public void printHand() {
         for (int i=0;i<hand.size();i++) {

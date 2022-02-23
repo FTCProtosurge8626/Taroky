@@ -2,8 +2,9 @@ package us.samts.taroky;
 
 import java.util.ArrayList;
 public class Deck {
-    private final ArrayList<Card> deck = new ArrayList<>();
+    private final ArrayList<Card> deck;
     public Deck() {
+        deck = new ArrayList<>();
         ArrayList<Card> standard = new ArrayList<>();
         for (int i=1;i<55;i++) {
             standard.add(new Card(i));
@@ -11,9 +12,11 @@ public class Deck {
         for (int i=0;i<54;i++) {
             deck.add(standard.remove((int)(Math.random()*standard.size())));
         }
+        if (deck.size() != 54) {throw new Error("Illegal deck size: " + deck.size());}
     }
     public void shuffle(int style) {
         ArrayList<Card> temp = new ArrayList<>();
+        if (deck.size() != 54) {throw new Error("Illegal deck size: " + deck.size());}
         switch (style) {
             case 1 -> { //Split in half and perfectly layer them
                 for (int i = 0; i < 27; i++) {

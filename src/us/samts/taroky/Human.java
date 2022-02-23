@@ -49,52 +49,6 @@ public class Human extends Player {
             default -> 0;
         };
     }
-    public void deal(int style, Table t) {
-        Player[] ps = t.getPlayers();
-        ArrayList<Card> d = t.getDeck().getDeck();
-        for (int i=0;i<6;i++) {t.getTalon().add(d.remove(0));} //Deal talon
-        while (d.size() > 0) {
-            switch (style) {
-                case 1:
-                    for (Player p : ps) {p.dealCard(d.remove(0));}
-                    break;
-                case 2:
-                    for (Player p : ps) {
-                        for (int i=0;i<2;i++) {
-                            p.dealCard(d.remove(0));
-                        }
-                    }
-                    break;
-                case 3:
-                    for (Player p : ps) {
-                        for (int i=0;i<3;i++) {
-                            p.dealCard(d.remove(0));
-                        }
-                    }
-                    break;
-                case 4:
-                    for (Player p : ps) {
-                        for (int i=0;i<4;i++) {
-                            p.dealCard(d.remove(0));
-                        }
-                    }
-                    break;
-                case 12:
-                    for (Player p : ps) {
-                        for (int i=0;i<12;i++) {
-                            p.dealCard(d.remove(0));
-                        }
-                    }
-                    break;
-                default:
-                    for (Player p : ps) {
-                        for (int i=0;i<6;i++) {
-                            p.dealCard(d.remove(0));
-                        }
-                    }
-            }
-        }
-    }
     public boolean goPrever() {
         sortHand(Card.Suit.TRUMP);
         sortHand(Card.Suit.SPADES);
@@ -113,29 +67,23 @@ public class Human extends Player {
         System.out.println("Do you want to call the I on the end? (y/n)");
         return s.nextLine().contains("y");
     }
-    public void drawTalon(int x, Table t) {
-        System.out.println(getName() + " drew " + x + " cards from the Talon");
-        for (int i=0;i<x;i++) {
-            dealCard(t.getTalon().remove(0));
-        }
-        sortHand(Card.Suit.TRUMP);
+    public boolean valat() {
+        System.out.println("Do you want to call valat? (y/n)");
+        return s.nextLine().contains("y");
     }
     public boolean preverTalon(Table t) {
         System.out.println("These are the showing cards: " + t.getTalon().get(0) + ", " + t.getTalon().get(1) + ", " + t.getTalon().get(2));
         System.out.println("Keep or swap? (k/s)");
-        return s.nextLine().contains("k");
+        return !s.nextLine().contains("k");
     }
-    public ArrayList<Card> discard() {
-        ArrayList<Card> discardPile = new ArrayList<>();
+    public void discard() {
         while (getHand().size() > 12) {
             System.out.println("Which card would you like to discard? (number)");
             printHand();
             int temp = s.nextInt();
             s.nextLine();
             getWinnings().add(getHand().get(temp));
-            discardPile.add(getHand().remove(temp));
         }
-        return discardPile;
     }
     public String determinePartner() {
         if (!hasCard("XIX")) {
