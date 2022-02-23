@@ -34,6 +34,9 @@ public abstract class Table {
     }
 
     public abstract void message(String message);
+    public abstract String getInputString(String message);
+    public abstract boolean getInputBoolean(String message);
+    public abstract int getInputInt(String message);
 
     public void startGame() throws InterruptedException {
         //Called to start a game
@@ -102,7 +105,7 @@ public abstract class Table {
         }//Ask each player if they'd like to go prever
         getTeam1().add(getLeader());//Povenost is always on team 1
         if (prever == -1) {
-            //Normal game
+            //Normal game. Prever is on team1, other teams are not configured
             getLeader().drawTalon(4,this);
             getPlayers()[playerOffset(getLeaderLocation(),1)].drawTalon(1,this);
             getPlayers()[playerOffset(getLeaderLocation(),2)].drawTalon(1,this);
@@ -134,6 +137,7 @@ public abstract class Table {
         //Announce partner
         String partner;
         if (prever != -1) {
+            //Someone is prever
             message("Everyone is working together against " + getPlayers()[prever]);
         } else {
             //2 teams

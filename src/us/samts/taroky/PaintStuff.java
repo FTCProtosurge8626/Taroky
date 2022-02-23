@@ -6,15 +6,26 @@ import java.awt.image.*;
 
 public class PaintStuff extends Canvas {
     private int location;
-    ConsoleTable t;
+    VisualTable t;
 
-    public PaintStuff(ConsoleTable consoleTable) {
+    public PaintStuff(VisualTable visualTable) {
         location = 5;
-        t = consoleTable;
+        t = visualTable;
     }
     public void paint(Graphics g) {
-        drawBackground(g);
+        //t is assumed to be instantiated
+
+        drawBackground(g);//Clears the screen
         drawTable(g);
+
+        //Paint is the main runner method. It will be called every 10 ms after the Play button is clicked
+        //There are 5 stacks of cards on the table, plus player hands and in-play cards
+        //Each stack should have a number on it equal to the number of cards. 4 stacks are discard piles (winnings), the last is the talon
+        //Any stack with 0 cards should not be drawn at all
+        //Player hands should be drawn in full. Only the Human player (players[0]) should have cards face-up
+        //All others (players[1,2,3]) should be drawn with cardBack
+        //Coins will be drawn in the corners, blue = 10, red = 5, white = 1. Each stack will have a number equal to the number of chips that player has
+        //Animations for paying chips and playing/discarding/collecting/drawing/dealing cards will likely be added, not sure when though \_(`-`)_/
 
         //Animation test
         location++;
@@ -26,6 +37,7 @@ public class PaintStuff extends Canvas {
     }
     public void writeString(String toWrite, int player) {
         if (player > 3 || player < 0) {throw new Error("Index OOB exception: bad player");}
+
 
     }
     public boolean drawMenu(Graphics g, int mouseX, int mouseY) {
@@ -56,6 +68,11 @@ public class PaintStuff extends Canvas {
         int[] x = {100,100,Taroky.width()-100,Taroky.width()-100};
         int[] y = {100,Taroky.height()-100,Taroky.height()-100,100};
         g.fillPolygon(x,y,4);
+
+        for (int i=0; i< t.getPlayers()[0].getHand().size();i++) {
+            //Paints your hand, face up
+            g.drawImage(t.getPlayers()[0].getHand().get(0).getImg(),i*50,Taroky.height()-50,null);
+        }
     }
     public void drawBackground(Graphics g) {
         g.setColor(new Color(20,20,255));//Background

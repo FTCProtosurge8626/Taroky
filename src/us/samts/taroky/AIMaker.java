@@ -8,6 +8,21 @@ public class AIMaker extends Table {
 
     @Override
     public void message(String message) {}
+
+    @Override
+    public String getInputString(String message) {
+        return null;
+    }
+
+    @Override
+    public boolean getInputBoolean(String message) {
+        return false;
+    }
+
+    @Override
+    public int getInputInt(String message) {
+        return 0;
+    }
     /*
     * The AI will be composed as follows:
     * Each AI will have inputs, as shown in the constructInputs() method in the AI class

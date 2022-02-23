@@ -8,13 +8,14 @@ public class ConsoleTable extends Table {
     private Scanner s;
 
     public ConsoleTable() {
-        super(0);
-        getPlayers()[0] = new Robot();
+        super(100);
+        s = new Scanner(System.in);
+        System.out.println("What's your name?");
+        getPlayers()[0] = new Human(s.nextLine(), this);
         getPlayers()[1] = new Robot("Samuel");
         getPlayers()[2] = new Robot("Daniel");
         getPlayers()[3] = new Robot("Benjamin");
-        print = false;
-        s = new Scanner(System.in);
+        print = true;
     }
     public void stats() {
         System.out.println(getRoundNumber() + " results: " + getPlayers()[0] + " " + getPlayers()[0].getChips() + ", "+ getPlayers()[1] + " " + getPlayers()[1].getChips() + ", "+ getPlayers()[2] + " " + getPlayers()[2].getChips() + ", " + getPlayers()[3] + " " + getPlayers()[3].getChips());
@@ -22,6 +23,26 @@ public class ConsoleTable extends Table {
     public void message(String message) {
         if (print) {System.out.println(message);}
     }
+
+    @Override
+    public String getInputString(String message) {
+        return s.nextLine();
+    }
+
+    @Override
+    public boolean getInputBoolean(String message) {
+        //Assuming (y/n)
+        System.out.print("(y/n)");
+        return s.nextLine().contains("y");
+    }
+
+    @Override
+    public int getInputInt(String message) {
+        int temp = s.nextInt();
+        s.nextLine();
+        return temp;
+    }
+
     @Override
     public boolean anotherHand() {
         if (print) {
