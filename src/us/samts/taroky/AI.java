@@ -5,10 +5,10 @@ import java.util.ArrayList;
 public class AI extends Player {
     private final Table table;
 
-    private final int numInputs = 129;
-    private final double[][] weightsI = new double[numInputs][20];
-    private final double[][] weightsH = new double[20][20];
-    private final double[][] weightsO = new double[20][11];
+    private final int numInputs = 120;
+    private double[][] weightsI = new double[numInputs][20];
+    private double[][] weightsH = new double[20][20];
+    private double[][] weightsO = new double[20][11];
 
     private final int[] inputs = new int[numInputs];
     private final double[] outputsI = new double[20];
@@ -47,6 +47,52 @@ public class AI extends Player {
             }
         }
     }
+    public AI(String name, int pn, Table t, double[][][] seed) {
+        //Set AI, based on seed
+
+        table = t;
+        //Normal player construction
+        setName(name);
+        setHand(new ArrayList<>());
+        setWinnings(new ArrayList<>());
+        setChips(100);
+        resetPointCards();
+        playerNumber = pn;
+
+        weightsI = seed[0];
+        weightsH = seed[1];
+        weightsO = seed[2];
+    }
+    public AI(String name, int pn, Table t, double[][][] seed, double lr) {
+        //Completely random AI, based on seed
+
+        table = t;
+        //Normal player construction
+        setName(name);
+        setHand(new ArrayList<>());
+        setWinnings(new ArrayList<>());
+        setChips(100);
+        resetPointCards();
+        playerNumber = pn;
+
+        //Weight construction
+        for (int i=0;i<weightsI.length;i++) {
+            for (int j=0;j<weightsI[i].length;j++) {
+                weightsI[i][j] = seed[0][i][j] + Math.random()*2*lr - lr; //Random based on learning rate
+            }
+        }
+        for (int i=0;i<weightsH.length;i++) {
+            for (int j=0;j<weightsH[i].length;j++) {
+                weightsH[i][j] = seed[1][i][j] + Math.random()*2*lr - lr; //Random based on learning rate
+            }
+        }
+        for (int i=0;i<weightsO.length;i++) {
+            for (int j=0;j<weightsO[i].length;j++) {
+                weightsO[i][j] = seed[2][i][j] + Math.random()*2*lr - lr; //Random based on learning rate
+            }
+        }
+    }
+
 
     public void constructInputs(Table t) {
         /*
@@ -157,8 +203,12 @@ public class AI extends Player {
             }
         }
         //Player chips (115-118)
+        int chipAbs = 0;
         for (int i=0;i<4;i++) {
-            inputs[115+i] = t.getPlayers()[Table.playerOffset(playerNumber,i)].getChips();
+            chipAbs += Math.abs(t.getPlayers()[Table.playerOffset(playerNumber,i)].getChips());
+        }
+        for (int i=0;i<4;i++) {
+            inputs[115+i] = t.getPlayers()[Table.playerOffset(playerNumber,i)].getChips() / chipAbs;//Normalize output
         }
         inputs[119] = t.getShuffleCount();
     }
@@ -190,6 +240,14 @@ public class AI extends Player {
         return ((double)1/( 1 + Math.pow(Math.E,(-1*x))));
     }
 
+    public double[][][] getSeed() {
+        return new double[][][] {
+                weightsI,
+                weightsH,
+                weightsO
+        };
+    }
+
     @Override
     public Deck shuffleDeck(Deck toShuffle) {
         constructInputs(table);
@@ -203,7 +261,7 @@ public class AI extends Player {
             inputs[10] = 0;
         }
         return toShuffle;
-    }
+    }//Output 0
 
     @Override
     public int cut() {
@@ -211,7 +269,7 @@ public class AI extends Player {
         for (int i=0;i<12;i++) {inputs[i]=0;}
         inputs[11] = 1;
         return (int)(determineOutputs(1));//Any int works, so no verification needed
-    }
+    }//Output 1
 
     @Override
     public boolean goPrever() {
@@ -219,20 +277,67 @@ public class AI extends Player {
         for (int i=0;i<12;i++) {inputs[i]=0;}
         inputs[9] = 1;
         return determineOutputs(2) > 0.9;
-    }
-
-    //CURRENT LOCATION
+    }//Output 2
 
     @Override
     public void discard() {
         constructInputs(table);
-
-    }
+        while (getHand().size() > 12) {
+            inputs[11] = getHand().size() - 12;//Set the final custom input to the number of cards remaining
+            ArrayList<Card> discardable = new ArrayList<>(getHand());
+            for (int i=discardable.size()-1;i>=0;i--) {
+                if (discardable.get(i).getSuit()==Card.Suit.TRUMP || discardable.get(i).getPointValue()==5) {
+                    discardable.remove(i);
+                }
+            }
+            if (discardable.size()==0) {
+                discardable = new ArrayList<>(getHand());
+                for (int i=discardable.size()-1;i>=0;i--) {
+                    if (discardable.get(i).getPointValue()==5) {
+                        discardable.remove(i);
+                    }
+                }
+            }
+            if (discardable.size()<=inputs[11]) {
+                //If the number of discardable cards is less than or equal to the number of cards needed to discard, then discard them all
+                for (int i=getHand().size()-1;i>=0;i--) {
+                    if (discardable.contains(getHand().get(i))) {
+                        getWinnings().add(getHand().remove(i));
+                    }
+                }
+            } else {
+                //AI makes a choice for what to discard
+                //Tell the AI what cards are discardable
+                for (int i=0;i<discardable.size();i++) {
+                    inputs[i] = discardable.get(i).getId();
+                }
+                //Rank the cards by sigmoid, then discard the ones with the highest values
+                double[] discardRank = new double[discardable.size()];
+                for (int i=0;i<discardable.size();i++) {
+                    inputs[10] = discardable.get(i).getId();
+                    discardRank[i] = determineOutputs(3);
+                }
+                //Snipe out the lowest ranked card
+                int lowest = 0;
+                for (int i=1;i<discardRank.length;i++) {
+                    if (discardRank[lowest] > discardRank[i]) {
+                        lowest = i;
+                    }
+                }
+                getWinnings().add(getHand().remove(lowest));
+            }
+        }
+    }//Output 3
 
     public String determinePartner() {
         constructInputs(table);
         //Can replace "hasCard" with AI choice
-        if (!hasCard("XIX")) {
+        for (int i=0;i<12;i++) {
+            inputs[i] = 0;
+        }
+        if (determineOutputs(4) > 0.9) { //Play alone?
+            return "XIX";
+        } else if (!hasCard("XIX")) {
             return "XIX";
         } else if (!hasCard("XVIII")){
             return "XVIII";
@@ -244,41 +349,126 @@ public class AI extends Player {
             return "XV";
         }
         return "XIX";
-    }
+    }//Output 4
 
     @Override
     public Card lead() {
         constructInputs(table);
-        return null;
-    }
+        for (int i=0;i<12;i++) {
+            if (i<getHand().size()) {
+                inputs[i] = getHand().get(i).getId();
+            } else {
+                inputs[i] = 0;
+            }
+        }
+        int toPlay = (int)(determineOutputs(5)*getHand().size());
+        if (toPlay == getHand().size()) {toPlay--;}//If the AI is 100% sure it wants to play the last card, it can overflow. This prevents that while still following the AI's intentions
+        return getHand().remove(toPlay);
+    }//Output 5
 
     @Override
     public Card takeTurn(Card.Suit leadingSuit) {
         constructInputs(table);
-        return null;
-    }
+        ArrayList<Card> playable = new ArrayList<>();
+        for (Card c : getHand()) {
+            if (c.getSuit()==leadingSuit) {
+                playable.add(c);
+            }
+        }
+        if (playable.size()==0) {
+            for (Card c : getHand()) {
+                if (c.getSuit()==Card.Suit.TRUMP) {
+                    playable.add(c);
+                }
+            }
+        }
+        if (playable.size()==0) {
+            playable.addAll(getHand());
+        }
+        //Choose a playable card
+        int toPlayN = (int)(determineOutputs(6)*playable.size());
+        if (toPlayN == playable.size()) {toPlayN--;}
+        Card toPlay = playable.remove(toPlayN);
+        for (int i=0;i<getHand().size();i++) {
+            if (getHand().get(i)==toPlay) {
+                getHand().remove(i);
+                break;
+            }
+        }
+        return toPlay;
+    }//Output 6
 
     @Override
     public boolean preverTalon(Table t) {
         constructInputs(table);
-        return true;
-    }
+        for (int i=0;i<12;i++) {inputs[i]=0;}
+        return determineOutputs(7)>0.9;
+    }//Output 7
 
     @Override
     public boolean fleck() {
         constructInputs(table);
-        return false;
-    }
+        for (int i=0;i<12;i++) {inputs[i]=0;}
+        return determineOutputs(8)>0.9;
+    }//Output 8
 
     @Override
     public boolean pagat() {
         constructInputs(table);
-        return false;
-    }
+        for (int i=0;i<12;i++) {inputs[i]=0;}
+        return determineOutputs(9)>0.9;
+    }//Output 9
 
     @Override
     public boolean valat() {
         constructInputs(table);
-        return false;
-    }
+        for (int i=0;i<12;i++) {inputs[i]=0;}
+        return determineOutputs(10)>0.9;
+    }//Output 10
 }
+
+/*
+ * The AI will be composed as follows:
+ * Each AI will have inputs, as shown in the constructInputs() method in the AI class
+ * These inputs will lead to 20 "hidden" neurons
+ * These neurons will lead to 20 additional "hidden" neurons
+ * These will lead to the 10 outputs
+ *
+ * Each output is what decision the AI makes when the Table requests an action. These include
+ *   Shuffle pattern     (0,1,2,3 on repeat and for how long)
+ *   Cut choice          (1,2,3,4,5,6,12,345)
+ *   Prever choice       (boolean)
+ *   Prever Talon        (Whether to keep the given Talon or swap)
+ *   Discard             (Which cards to discard)
+ *   Fleck               (boolean)
+ *   Pagat               (boolean)
+ *   Valat               (boolean)
+ *   Determine Partner   (Whether to play by itself when it has the XIX and is pavenost)
+ *   Lead                (Which card to lead)
+ *   TakeTurn            (Which card to play on its turn)
+ *
+ * These choices will determine how "good" the AI is
+ * The AI will each play 10,000 rounds, then the highest scoring AI will become the seed.
+ * The seed will continue on, with the other AI being slight variations of it
+ *
+ * AIMaker will run this, and after each round will print the seed
+ * This seed can be pasted into the initialSeed variable to start off the next generation if there is a pause between runs
+ *
+ * Neural Network:
+ * INPUTS (A lot, currently 120)
+ * HIDDEN 20
+ * HIDDEN 20
+ * OUTPUTS 11
+ *
+ * Connections:
+ * I>H1  =
+ * H1>H2 = 400
+ * H2>O  = 232
+ * weightI[inputs][20]
+ * weightsH[20][20]
+ * weightsO[20][11]
+ *
+ * outputsI[20]
+ * outputsH[20]
+ *
+ * */

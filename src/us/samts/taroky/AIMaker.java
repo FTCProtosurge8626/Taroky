@@ -1,13 +1,88 @@
 package us.samts.taroky;
 
+import java.io.*;
+
 public class AIMaker extends Table {
-    int[] initialSeed;
-    protected AIMaker() {
+    double[][][] initialSeed;
+    FileWriter fw;
+    BufferedWriter bw;
+    File logs = new File("C:\\Users\\profe\\IdeaProjects\\Taroky\\src\\resources\\logs\\logs.txt");
+
+    protected AIMaker(double[][][] seed) throws IOException {
         super(0);
+        fw = new FileWriter(logs,false);
+        bw = new BufferedWriter(fw);
+        initialSeed = seed;
+        getPlayers()[0] = new AI("Charles",0,this,seed,0.1);
+        getPlayers()[1] = new AI("Danny",1,this,seed,0.1);
+        getPlayers()[2] = new AI("Humphrey",2,this,seed,0.1);
+        getPlayers()[3] = new AI("Dianne",3,this,seed,0.1);
+    }
+    protected AIMaker() throws IOException {
+        super(0);
+        fw = new FileWriter(logs,true);
+        bw = new BufferedWriter(fw);
+        getPlayers()[0] = new AI("Charles",0,this);
+        getPlayers()[1] = new AI("Danny",1,this);
+        getPlayers()[2] = new AI("Humphrey",2,this);
+        getPlayers()[3] = new AI("Dianne",3,this);
     }
 
     @Override
-    public void message(String message) {}
+    public boolean anotherHand() {
+        if (getRoundNumber()%100 == 0) {
+            int best = 0;
+            for (int i=1;i<4;i++) {
+                if (getPlayers()[i].getChips() > getPlayers()[best].getChips()) {
+                    best = i;
+                }
+            }
+            initialSeed = ((AI) getPlayers()[best] ).getSeed();
+            if (getRoundNumber()%10000 == 0) {
+                System.out.println(printSeed(initialSeed));
+                System.out.println(getPlayers()[0] + ": " + getPlayers()[0].getChips() + ", " + getPlayers()[1] + ": " + getPlayers()[1].getChips() + ", " + getPlayers()[2] + ": " + getPlayers()[2].getChips() + ", " + getPlayers()[3] + ": " + getPlayers()[3].getChips());
+            }
+            resetAI();
+        }
+        return true;
+    }
+
+    public void resetAI() {
+        getPlayers()[0] = new AI("Charles",0,this,initialSeed);
+        getPlayers()[1] = new AI("Danny",1,this,initialSeed,0.1);
+        getPlayers()[2] = new AI("Humphrey",2,this,initialSeed,0.1);
+        getPlayers()[3] = new AI("Dianne",3,this,initialSeed,0.1);
+    }
+
+    public static String printSeed(double[][][] toPrint) {
+        StringBuilder print = new StringBuilder("{");
+        for (double[][] z : toPrint) {
+            print.append("{");
+            for (double[] x: z) {
+                print.append("{");
+                for (double y: x) {
+                    print.append(y).append(",");
+                }
+                print = new StringBuilder(print.substring(0, print.length() - 1));
+                print.append("},");
+            }
+            print = new StringBuilder(print.substring(0, print.length() - 1));
+            print.append("},");
+        }
+        print = new StringBuilder(print.substring(0, print.length() - 1));
+        print.append("}");
+        return print.toString();
+    }
+
+    @Override
+    public void message(String message) {
+        //System.out.println(message);
+        /*try {
+            bw.write(message + "\n");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }*/
+    }
 
     @Override
     public String getInputString(String message) {
@@ -23,49 +98,5 @@ public class AIMaker extends Table {
     public int getInputInt(String message) {
         return 0;
     }
-    /*
-    * The AI will be composed as follows:
-    * Each AI will have inputs, as shown in the constructInputs() method in the AI class
-    * These inputs will lead to 20 "hidden" neurons
-    * These neurons will lead to 20 additional "hidden" neurons
-    * These will lead to the 10 outputs
-    *
-    * Each output is what decision the AI makes when the Table requests an action. These include
-    *   Shuffle pattern     (0,1,2,3 on repeat and for how long)
-    *   Cut choice          (1,2,3,4,5,6,12,345)
-    *   Prever choice       (boolean)
-    *   Prever Talon        (Whether to keep the given Talon or swap)
-    *   Discard             (Which cards to discard)
-    *   Fleck               (boolean)
-    *   Pagat               (boolean)
-    *   Valat               (boolean)
-    *   Determine Partner   (Whether to play by itself when it has the XIX and is pavenost)
-    *   Lead                (Which card to lead)
-    *   TakeTurn            (Which card to play on its turn)
-    *
-    * These choices will determine how "good" the AI is
-    * The AI will each play 10,000 rounds, then the highest scoring AI will become the seed.
-    * The seed will continue on, with the other AI being slight variations of it
-    *
-    * AIMaker will run this, and after each round will print the seed
-    * This seed can be pasted into the initialSeed variable to start off the next generation if there is a pause between runs
-    *
-    * Neural Network:
-    * INPUTS (A lot, currently 129)
-    * HIDDEN 20
-    * HIDDEN 20
-    * OUTPUTS 11
-    *
-    * Connections:
-    * I>H1  =
-    * H1>H2 = 400
-    * H2>O  = 232
-    * weightI[inputs][20]
-    * weightsH[20][20]
-    * weightsO[20][11]
-    *
-    * outputsI[20]
-    * outputsH[20]
-    *
-    * */
+
 }

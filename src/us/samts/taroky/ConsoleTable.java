@@ -17,6 +17,16 @@ public class ConsoleTable extends Table {
         getPlayers()[3] = new Robot("Benjamin");
         print = true;
     }
+    public ConsoleTable(double[][][] seed) {
+        super(100);
+        s = new Scanner(System.in);
+        System.out.println("What's your name?");
+        getPlayers()[0] = new Human(s.nextLine(), this);
+        getPlayers()[1] = new AI("Charles",1,this,seed);
+        getPlayers()[1] = new AI("Darcey",1,this,seed);
+        getPlayers()[1] = new AI("Henry",1,this,seed);
+        print = true;
+    }
     public void stats() {
         System.out.println(getRoundNumber() + " results: " + getPlayers()[0] + " " + getPlayers()[0].getChips() + ", "+ getPlayers()[1] + " " + getPlayers()[1].getChips() + ", "+ getPlayers()[2] + " " + getPlayers()[2].getChips() + ", " + getPlayers()[3] + " " + getPlayers()[3].getChips());
     }

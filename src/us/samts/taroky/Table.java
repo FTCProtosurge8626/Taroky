@@ -37,7 +37,22 @@ public abstract class Table {
         this.players = new Player[4];
         this.waitTime = waitTime;
         roundNumber = 0;
+        talon = new ArrayList<>();
+        team1 = new ArrayList<>();
+        team2 = new ArrayList<>();
+        trickWinners = new ArrayList<>();
+        trick = new ArrayList<>();
         deck = new Deck();
+        if (deck.getDeck().size() != 54) {throw new Error("Illegal deck size");}
+        IOTE = -1;
+        wonPagat = false;
+        lostPagat = false;
+        valat = false;
+        doublers = 0;
+        pDoublers = 0;
+        valatTeam = 0;
+
+
     }
 
     public abstract void message(String message);
@@ -51,11 +66,12 @@ public abstract class Table {
         roundNumber++;
         roundHandler(true);
         hand(preverCheck());
+        resetTable();
         while (anotherHand()) {
-            resetTable();
             roundNumber++;
             roundHandler(false);
             hand(preverCheck());
+            resetTable();
         }
     }
     public void roundHandler(boolean roundOne) throws InterruptedException {
@@ -118,19 +134,27 @@ public abstract class Table {
             getPlayers()[playerOffset(getLeaderLocation(),1)].drawTalon(1,this);
             getPlayers()[playerOffset(getLeaderLocation(),2)].drawTalon(1,this);
         } else {
+            message(players[prever] + " is going prever");
             if (getPlayers()[prever].preverTalon(this)) {
+                message(players[prever] + " looked at the bottom");
                 ArrayList<Card> tempTalon = new ArrayList<>();
-                tempTalon.add(getTalon().remove(0));
+                tempTalon.add(getTalon().remove(0));//Cards from the top are set aside
                 tempTalon.add(getTalon().remove(0));
                 tempTalon.add(getTalon().remove(0));
                 setPDoublers(getPDoublers() + 1);//Double winnings only if prever loses
                 if (getPlayers()[prever].preverTalon(this)) {
+                    message(players[prever] + " went back to the top");
                     if (prever!=getLeaderLocation()) {
                         getLeader().setWinnings(getTalon());
-                        setTalon(new ArrayList<>());
-                        getTalon().addAll(tempTalon);
-                        setPDoublers(getPDoublers() + 1);//Double winnings again only if prever loses
+                    } else {
+                        getTeam2().get(0).setWinnings(getTalon());
                     }
+                    setTalon(new ArrayList<>());
+                    getTalon().addAll(tempTalon);
+                    setPDoublers(getPDoublers() + 1);//Double winnings again only if prever loses
+                } else {
+                    //Give tempTalon points to the other team
+                    if (getLeaderLocation()!=prever) {getLeader().addWinnings(tempTalon);} else {getPlayers()[playerOffset(getLeaderLocation(),1)].addWinnings(tempTalon);}
                 }
             }
             getPlayers()[prever].drawTalon(3,this);
@@ -201,8 +225,10 @@ public abstract class Table {
                 break;
         }
         //If either team got 0 wins, set natural valat to true
-        if (!(team1wontrick && team2wontrick))
-            natValat = true;
+        natValat = !(team1wontrick && team2wontrick);
+        if (!team1wontrick && !team2wontrick) {
+            throw new Error("Neither team won a trick");
+        }
         if (!valat && !natValat) {
             setTeam1Points(0);//Count one team's points
             for (Player p: getTeam1()) {
@@ -354,6 +380,9 @@ public abstract class Table {
                 }
             }
         } else {
+            if (team1wontrick && team2wontrick && !valat) {
+                throw new Error("Both teams won a trick but valat was still sent");//Only thrown if valat was not called
+            }
             //Someone valat'd
             int valatChips = 20;
             if (prever)
@@ -574,13 +603,17 @@ public abstract class Table {
         trick = new ArrayList<>();
         //First player plays a card
         trick.add(currentLeader.lead());
+        message(currentLeader.toString() +" led the " + trick.get(0).toString());
         Thread.sleep(getWaitTime()* 3L);
         setLeaderLocation(getLeader().equals(getPlayers()[0]) ? 0 : getLeader().equals(getPlayers()[1]) ? 1 : getLeader().equals(getPlayers()[2]) ? 2 : 3);
         trick.add(getPlayers()[playerOffset(getLeaderLocation(),1)].takeTurn(trick.get(0).getSuit()));
+        message(getPlayers()[playerOffset(getLeaderLocation(),1)] + " played the " +trick.get(1).toString());
         Thread.sleep(getWaitTime()* 3L);
         trick.add(getPlayers()[playerOffset(getLeaderLocation(),2)].takeTurn(trick.get(0).getSuit()));
+        message(getPlayers()[playerOffset(getLeaderLocation(),2)] + " played the " +trick.get(2).toString());
         Thread.sleep(getWaitTime()* 3L);
         trick.add(getPlayers()[playerOffset(getLeaderLocation(),3)].takeTurn(trick.get(0).getSuit()));
+        message(getPlayers()[playerOffset(getLeaderLocation(),3)] + " played the " +trick.get(3).toString());
         Thread.sleep(getWaitTime()* 3L);
         if (trickNum == 11) {
             setLostPagat(getIOTE() != -1);//If someone called the I then it's assumed lost unless they play it
@@ -682,9 +715,9 @@ public abstract class Table {
         team1 = new ArrayList<>();
         team2 = new ArrayList<>();
         trickWinners = new ArrayList<>();
+        trick = new ArrayList<>();
         if (!deck.deckSize()) {
-            System.out.println("\nNEW DECK CONSTRUCTED\n");
-            deck = new Deck();
+            throw new Error("\nNEW DECK CONSTRUCTED\n" + deck + "\n" + deck.getDeck().size());
         }
         if (deck.getDeck().size() != 54) {throw new Error("Illegal deck size");}
         IOTE = -1;

@@ -8,7 +8,6 @@ public abstract class Player {
     private int chips;
     private ArrayList<String> pointCards;
     private String name;
-    private int chipModifier;
 
     public abstract Deck shuffleDeck(Deck toShuffle);
     public abstract int cut();

@@ -41,13 +41,11 @@ public class Robot extends Player {
     }
     public void discard() {
         sortHand();
-        ArrayList<Card> toDiscard = new ArrayList<>();
         while (getHand().size() > 12) {
             getWinnings().add(getHand().get(0));
             if (getHand().get(0).getSuit()==Card.Suit.TRUMP && ConsoleTable.getPrint()) {
                 System.out.println(getName() + " discarded a trump card: " + getHand().get(0));
             }
-            toDiscard.add(getHand().remove(0));
         }
     }
     public String determinePartner() {
