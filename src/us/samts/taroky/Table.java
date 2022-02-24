@@ -17,6 +17,7 @@ public abstract class Table {
     private int team1Points;
     private final int waitTime;
     private int doublers;
+    private int whoPrever;
     private int pDoublers;
     private int IOTE;
     private boolean wonPagat;
@@ -26,6 +27,11 @@ public abstract class Table {
     private boolean natValat;
     private int valatTeam;
     private int roundNumber;
+    private String partnerCard;
+    private int pPartner;
+    private boolean partnerRevealed;
+
+    private static int shuffleCount;
 
     protected Table(int waitTime) {
         this.players = new Player[4];
@@ -90,6 +96,7 @@ public abstract class Table {
         for (int i=0; i<4;i++) {
             if (getPlayers()[playerOffset(getDealer(),i+1)].goPrever()) {
                 prever = playerOffset(getDealer(),i+1);
+                whoPrever = prever;
                 if (prever!=getLeaderLocation()) {
                     getTeam2().add(getPlayers()[prever]); //Add prever to team 2
                     if (prever != 0 && getLeaderLocation() != 0) {getTeam1().add(getPlayers()[0]);}//Add everyone else to team 1
@@ -139,14 +146,17 @@ public abstract class Table {
         String partner;
         if (prever != -1) {
             //Someone is prever
+            partnerCard = "none";
             message("Everyone is working together against " + getPlayers()[prever]);
         } else {
             //2 teams
             partner=getLeader().determinePartner();
+            partnerCard = partner;
             message("Povenost (" + getLeader() + ") is playing with " + partner + "\n");
             for (int i=0;i<4;i++) {
                 if (getPlayers()[i].hasCard(partner) && !getPlayers()[i].equals(getLeader())) {
                     getTeam1().add(getPlayers()[i]);
+                    pPartner = i+1;
                 } else if (!getPlayers()[i].equals(getLeader())) {
                     getTeam2().add(getPlayers()[i]);
                 }
@@ -601,6 +611,13 @@ public abstract class Table {
                 }
             }
         }//Pagat on the end
+        if (!partnerRevealed)
+            for (Card c : trick) {
+                if (c.getName().equals(partnerCard)) {
+                    partnerRevealed = true;
+                    break;
+                }
+            }
         message("\n");
         boolean trumps = false;
         for (int i=0;i<4;i++) {
@@ -750,11 +767,20 @@ public abstract class Table {
     public int getTeam1Points() {return team1Points;}
     public int getDoublers() {return doublers;}
     public int getPDoublers() {return pDoublers;}
+    public int getWhoPrever() {return whoPrever;}
     public int getIOTE() {return IOTE;}
     public boolean getWonPagat() {return wonPagat;}
     public boolean getLostPagat() {return lostPagat;}
     public int getPagatTeam() {return pagatTeam;}
     public int getRoundNumber() {return roundNumber;}
+    public int getValatTeam() {return valatTeam;}
+    public boolean getValat() {return valat;}
+    public String getPartnerCard() {return partnerCard;}
+    public int getPPartner() {return pPartner;}
+    public boolean getPartnerRevealed() {return partnerRevealed;}
+    public int getShuffleCount() {return shuffleCount;}
+
+    public void incrementShuffleCount() {shuffleCount++;}
 
     public void setDeck(Deck d) {
         deck = d;

@@ -23,6 +23,7 @@ public class Human extends Player {
         temp = t.getInputInt("How would you like to shuffle? (1 (riffle), 2 (chop), or 3 (cut))");
         toShuffle.shuffle(temp > 0 && temp < 4 ? temp : 1);
         while (true) {
+            t.incrementShuffleCount();
             temp = t.getInputInt("Would you like to shuffle again? (0 to leave, 1/2/3 to shuffle again)");
             if (temp == 0) {break;}
             toShuffle.shuffle(temp > 0 && temp < 4 ? temp : 1);
