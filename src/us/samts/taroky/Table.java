@@ -50,8 +50,6 @@ public abstract class Table {
         doublers = 0;
         pDoublers = 0;
         valatTeam = 0;
-
-
     }
 
     public abstract void message(String message);
@@ -62,8 +60,12 @@ public abstract class Table {
     public void startGame() throws InterruptedException {
         //Called to start a game
         resetTable();
+        if (deck.getDeck().size()!=54)
+            throw new Error("Illegal deck size");
         roundNumber++;
         roundHandler(true);
+        if (deck.getDeck().size()!=0)
+            throw new Error("Illegal deck size");
         hand(preverCheck());
         resetTable();
         while (anotherHand()) {

@@ -62,6 +62,12 @@ public class AI extends Player {
         weightsI = seed[0];
         weightsH = seed[1];
         weightsO = seed[2];
+        if (seed[0].length != numInputs || seed[0][0].length != 20)
+            throw new Error("Given seed is the wrong size");
+        if (seed[1].length != 20 || seed[1][0].length != 20)
+            throw new Error("Given seed is the wrong size");
+        if (seed[2].length != 20 || seed[2][0].length != 11)
+            throw new Error("Given seed is the wrong size");
     }
     public AI(String name, int pn, Table t, double[][][] seed, double lr) {
         //Completely random AI, based on seed

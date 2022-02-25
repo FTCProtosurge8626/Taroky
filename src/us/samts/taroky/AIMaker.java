@@ -33,14 +33,18 @@ public class AIMaker extends Table {
         getPlayers()[3] = ai[3];
     }
     public AI[] getAI() {
-        return (AI[])getPlayers();
+        AI[] temp = new AI[4];
+        for (int i=0;i<4;i++) {
+            temp[i] = (AI) getPlayers()[i];
+        }
+        return temp;
     }
 
     public Table getTable() {return this;}
 
     @Override
     public boolean anotherHand() {
-        if (getRoundNumber()%100 == 0) {
+        if (getRoundNumber()%100 == 0 && playAgain) {
             int best = 0;
             for (int i=1;i<4;i++) {
                 if (getPlayers()[i].getChips() > getPlayers()[best].getChips()) {
