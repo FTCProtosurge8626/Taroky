@@ -1,27 +1,25 @@
 package us.samts.taroky;
 
-import java.io.*;
-
 public class AIMaker extends Table {
     double[][][] initialSeed;
-    FileWriter fw;
-    BufferedWriter bw;
-    File logs = new File("C:\\Users\\profe\\IdeaProjects\\Taroky\\src\\resources\\logs\\logs.txt");
 
-    protected AIMaker(double[][][] seed) throws IOException {
+    protected AIMaker(double[][][] seed)  {
         super(0);
-        fw = new FileWriter(logs,false);
-        bw = new BufferedWriter(fw);
         initialSeed = seed;
         getPlayers()[0] = new AI("Charles",0,this,seed,0.1);
         getPlayers()[1] = new AI("Danny",1,this,seed,0.1);
         getPlayers()[2] = new AI("Humphrey",2,this,seed,0.1);
         getPlayers()[3] = new AI("Dianne",3,this,seed,0.1);
     }
-    protected AIMaker() throws IOException {
+    public AIMaker(AI[] ai) {
         super(0);
-        fw = new FileWriter(logs,true);
-        bw = new BufferedWriter(fw);
+        getPlayers()[0] = ai[0];
+        getPlayers()[1] = ai[1];
+        getPlayers()[2] = ai[2];
+        getPlayers()[3] = ai[3];
+    }
+    protected AIMaker()  {
+        super(0);
         getPlayers()[0] = new AI("Charles",0,this);
         getPlayers()[1] = new AI("Danny",1,this);
         getPlayers()[2] = new AI("Humphrey",2,this);
@@ -77,11 +75,6 @@ public class AIMaker extends Table {
     @Override
     public void message(String message) {
         //System.out.println(message);
-        /*try {
-            bw.write(message + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
-        }*/
     }
 
     @Override

@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.Scanner;
 
 public class Human extends Player {
-    private Table t;
+    private final Table t;
 
     public Human(String name, Table table) {
         setName(name);
@@ -58,6 +58,7 @@ public class Human extends Player {
         return t.getInputBoolean("Do you want to call the I on the end? ");
     }
     public boolean valat() {
+        printHand();
         return t.getInputBoolean("Do you want to call valat? ");
     }
     public boolean preverTalon(Table t) {

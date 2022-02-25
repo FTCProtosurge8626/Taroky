@@ -24,7 +24,6 @@ public abstract class Table {
     private boolean lostPagat;
     private int pagatTeam;
     private boolean valat;
-    private boolean natValat;
     private int valatTeam;
     private int roundNumber;
     private String partnerCard;
@@ -225,11 +224,102 @@ public abstract class Table {
                 break;
         }
         //If either team got 0 wins, set natural valat to true
-        natValat = !(team1wontrick && team2wontrick);
+        boolean natValat = !(team1wontrick && team2wontrick);
         if (!team1wontrick && !team2wontrick) {
             throw new Error("Neither team won a trick");
         }
         if (!valat && !natValat) {
+            if (getLostPagat() || getWonPagat()) {
+                if (getPagatTeam()==0 && getIOTE() != -1) {
+                    for (Player p : getTeam1()) {
+                        if (p == getPlayers()[getIOTE()]) {
+                            //Found pagat caller, now find which team s/he is on
+                            for (Player t1 : getTeam1()) {
+                                if (p==t1) {
+                                    setPagatTeam(1);
+                                }
+                            }
+                            for (Player t2 : getTeam2()) {
+                                if (p==t2) {
+                                    setPagatTeam(2);
+                                }
+                            }
+                        }
+                    }
+                } //Set pagatTeam to whoever called the pagat
+                //Pagat was either called or played on the last trick
+                int pChips = 2;
+                if (getIOTE() != -1) {
+                    pChips = 4;//Double bounty if called
+                }
+                if (getIOTE() != -1 && getWonPagat()) {
+                    //Pagat was won
+                    if (getPagatTeam()==1) {
+                        //Team 1 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player gets chips from all others
+                            teamPay(getPovenost(), getTeam2(), -pChips);
+                            message("Team 1 gets " + pChips + " chips for pagat");
+                        } else if (team1.size()==3) {
+                            //3 players get chips from prever
+                            teamPay(getTeam2().get(0), getTeam1(), pChips);
+                            message("Team 1 gets " + pChips + " chips for pagat");
+                        } else {
+                            //2 players on team 1
+                            teamPay(getTeam2(), getTeam1(), pChips);
+                            message("Team 1 gets " + pChips + "  for pagat");
+                        }
+                    } else {
+                        //Team 2 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player pays chips to all others
+                            teamPay(getPovenost(), getTeam2(), pChips);
+                            message("Team 1 pays " + pChips + " chips for pagat");
+                        } else if (team1.size()==3) {
+                            //3 players pay chips to prever
+                            teamPay(getTeam2().get(0), getTeam1(), -pChips);
+                            message("Team 1 pays " + pChips + " chips for pagat");
+                        } else {
+                            //2 players on team 1, they get paid by team 2
+                            teamPay(getTeam1(), getTeam2(), pChips);
+                            message("Team 1 pays " + pChips + " chips for pagat");
+                        }
+                    }
+                } else if (getLostPagat()) {
+                    //Pagat was lost
+                    if (getPagatTeam()==1) {
+                        //Team 1 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player pays chips to all others
+                            teamPay(getPovenost(), getTeam2(), pChips);
+                            message("Team 1 pays " + pChips + " chips for pagat");
+                        } else if (team1.size()==3) {
+                            //3 players pay chips to prever
+                            teamPay(getTeam2().get(0), getTeam1(), -pChips);
+                            message("Team 1 pays " + pChips + " chips for pagat");
+                        } else {
+                            //2 players on team 1
+                            teamPay(getTeam1(), getTeam2(), pChips);
+                            message("Team 1 pays " + pChips + " for pagat");
+                        }
+                    } else {
+                        //Team 2 hosts pagat
+                        if (getTeam1().size()==1) {
+                            //1 player gets chips from all others
+                            teamPay(getPovenost(), getTeam2(), -pChips);
+                            message("Team 1 gets " + pChips + " chips for pagat");
+                        } else if (team1.size()==3) {
+                            //3 players get chips from prever
+                            teamPay(getTeam2().get(0), getTeam1(), pChips);
+                            message("Team 1 gets " + pChips + " chips for pagat");
+                        } else {
+                            //2 players on team 1, they get paid by team 2
+                            teamPay(getTeam2(), getTeam1(), pChips);
+                            message("Team 1 gets " + pChips + " chips for pagat");
+                        }
+                    }
+                }
+            }
             setTeam1Points(0);//Count one team's points
             for (Player p: getTeam1()) {
                 setTeam1Points(getTeam1Points() + p.countPoints());
@@ -242,151 +332,74 @@ public abstract class Table {
                     setTeam1Points(getTeam1Points() + 10);
                     setTeam1Points(getTeam1Points() *  3);
                     setTeam1Points( (int) Math.round((double) getTeam1Points() / 10));
-                    team1pays = true;
+                    team1pays = false;//Team 1 earns
                 } else {
                     setTeam1Points( 53 - getTeam1Points());
                     setTeam1Points(getTeam1Points() + 10);
                     setTeam1Points(getTeam1Points() *  3);
                     setTeam1Points( (int) Math.round((double) getTeam1Points() / 10));
-                    team1pays = false;
+                    team1pays = true;//Team 1 pays
                 }
-                setTeam1Points(getTeam1Points() *  (int) Math.pow(2,getDoublers()));
+                setTeam1Points(getTeam1Points() *  (int) Math.pow(2,getDoublers()));//Fleck
                 if (getTeam1().size() == 1) { //Pavenost is prever
                     if (team1pays) {
+                        //Pavenost is team 1, team 1 lost, so prever pays
                         setTeam1Points((int) (getTeam1Points() *  Math.pow(2,getPDoublers())));//Double it a lot if prever loses
                         teamPay(getPovenost(), getTeam2(), getTeam1Points());//Pavenost/prever pays
-                        message("Team 2 pays: " + getTeam1Points() + " chips");
+                        message("Team 1 pays: " + getTeam1Points() + " chips");
                     } else {
+                        //Pavenost is team 1, team 1 won, so prever earns
                         teamPay(getPovenost(), getTeam2(), -getTeam1Points());//Povenost gets paid
-                        message("Team 1pays: " + getTeam1Points() + " chips");
+                        message("Team 2 pays: " + getTeam1Points() + " chips");
                     }
-                } else {//Someone else is prever
-                    if (team1pays) {
+                } else {//Someone else is prever. Team 2 is prever
+                    if (team1pays) {//If team 1 pays, then team 2 gets paid
+                        teamPay(getTeam2().get(0), getTeam1(), -getTeam1Points());//Prever gets paid
+                        message("Team 1 pays: " + getTeam1Points() + " chips");
+                    } else {
                         setTeam1Points((int) (getTeam1Points() *  Math.pow(2,getPDoublers())));//Double it a lot if prever loses
                         teamPay(getTeam2().get(0), getTeam1(), getTeam1Points());//Prever pays
                         message("Team 2 pays: " + getTeam1Points() + " chips");
-                    } else {
-                        teamPay(getTeam2().get(0), getTeam1(), -getTeam1Points());//Prever gets paid
-                        message("Team 1pays: " + getTeam1Points() + " chips");
                     }
                 }
             } else {
                 boolean team1pays;
                 if (getTeam1Points() > 53) {
                     setTeam1Points(getTeam1Points() -  53);
-                    setTeam1Points(getTeam1Points() + 10);
-                    setTeam1Points(getTeam1Points() *  2);
-                    setTeam1Points( (int) Math.round((double) getTeam1Points() / 10));
-                    team1pays = true;
+                    team1pays = false;//If team 1 has more than 53 points, then team 1 gets paid and team 2 pays
                 } else {
                     setTeam1Points( 53 - getTeam1Points());
-                    setTeam1Points(getTeam1Points() + 10);
-                    setTeam1Points(getTeam1Points() *  2);
-                    setTeam1Points( (int) Math.round((double) getTeam1Points() / 10));
-                    team1pays = false;
+                    team1pays = true;
                 }
-                setTeam1Points(getTeam1Points() *  (int) Math.pow(2,getDoublers()));
-                if (getLostPagat() || getWonPagat()) {
-                    if (getPagatTeam()==0 && getIOTE() != -1) {
-                        for (Player p : getTeam1()) {
-                            if (p == getPlayers()[getIOTE()]) {
-                                //Found pagat caller, now find which team s/he is on
-                                for (Player t1 : getTeam1()) {
-                                    if (p==t1) {
-                                        setPagatTeam(1);
-                                    }
-                                }
-                                for (Player t2 : getTeam2()) {
-                                    if (p==t2) {
-                                        setPagatTeam(2);
-                                    }
-                                }
-                            }
-                        }
-                    } //Set pagatTeam to whoever called the pagat
-                    //Pagat was either called or played on the last trick
-                    int pChips = 2;
-                    if (getIOTE() != -1) {
-                        pChips = 4;//Double bounty if called
-                    }
-                    if (getIOTE() != -1 && getWonPagat()) {
-                        //Pagat was won
-                        if (getPagatTeam()==1) {
-                            //Team 1 hosts pagat
-                            if (getTeam1().size()==1) {
-                                //1 player gets chips from all others
-                                teamPay(getPovenost(), getTeam2(), pChips);
-                                message("Team 1 gets " + pChips + " chips for pagat");
-                            } else {
-                                //2 players on team 1
-                                teamPay(getTeam1(), getTeam2(), 4);
-                                message("Team 1 gets " + pChips + "  for pagat");
-                            }
-                        } else {
-                            //Team 2 hosts pagat
-                            if (getTeam1().size()==1) {
-                                //1 player pays chips to all others
-                                teamPay(getPovenost(), getTeam2(), -pChips);
-                                message("Team 1 pays: " + pChips + " chips for pagat");
-                            } else {
-                                //2 players on team 1, they get paid by team 2
-                                teamPay(getTeam2(), getTeam1(), pChips);
-                                message("Team 1 pays " + pChips + " chips for pagat");
-                            }
-                        }
-                    } else if (getLostPagat()) {
-                        //Pagat was lost
-                        if (getPagatTeam()==1) {
-                            //Team 1 hosts pagat
-                            if (getTeam1().size()==1) {
-                                //1 player gets chips from all others
-                                teamPay(getPovenost(), getTeam2(), -pChips);
-                                message("Team 1 pays " + pChips + " chips for pagat");
-                            } else {
-                                //2 players on team 1
-                                teamPay(getTeam1(), getTeam2(), -pChips);
-                                message("Team 1 pays " + pChips + "  for pagat");
-                            }
-                        } else {
-                            //Team 2 hosts pagat
-                            if (getTeam1().size()==1) {
-                                //1 player pays chips to all others
-                                teamPay(getPovenost(), getTeam2(), pChips);
-                                message("Team 1 gets: " + pChips + " chips for pagat");
-                            } else {
-                                //2 players on team 1, they get paid by team 2
-                                teamPay(getTeam1(), getTeam2(), pChips);
-                                message("Team 1 gets " + pChips + " chips for pagat");
-                            }
-                        }
-                    }
-                }
+                setTeam1Points(getTeam1Points() + 10);
+                setTeam1Points(getTeam1Points() *  2);
+                setTeam1Points( (int) Math.round((double) getTeam1Points() / 10));
+                setTeam1Points(getTeam1Points() *  (int) Math.pow(2,getDoublers()));//Fleck
+
                 if (getTeam1().size() == 2) {
-                    if (team1pays) {
-                        teamPay(getTeam2(), getTeam1(), getTeam1Points());
-                        message("Team 2 pays: " + getTeam1Points() + " chips");
-                    } else {
+                    if (team1pays) {//Team 1 pays team 2
                         teamPay(getTeam1(), getTeam2(), getTeam1Points());
                         message("Team 1 pays: " + getTeam1Points() + " chips");
-                    }
-                } else if (getTeam1().size() == 1) {//Pavenost is alone
-                    if (team1pays) {
-                        teamPay(getPovenost(), getTeam2(), getTeam1Points());
-                        message("Team 2 pays: " + getTeam1Points() + " chips");
                     } else {
-                        teamPay(getPovenost(), getTeam2(), -getTeam1Points());
+                        teamPay(getTeam2(), getTeam1(), getTeam1Points());
+                        message("Team 2 pays: " + getTeam1Points() + " chips");
+                    }
+                } else if (getTeam1().size() == 1) {//Pavenost is alone on team 1
+                    if (team1pays) {//Pavenost pays
+                        teamPay(getPovenost(), getTeam2(), getTeam1Points());
                         message("Team 1 pays: " + getTeam1Points() + " chips");
+                    } else {//Pavenost gets paid
+                        teamPay(getPovenost(), getTeam2(), -getTeam1Points());
+                        message("Team 2 pays: " + getTeam1Points() + " chips");
                     }
                 }
             }
         } else {
-            if (team1wontrick && team2wontrick && !valat) {
-                throw new Error("Both teams won a trick but valat was still sent");//Only thrown if valat was not called
-            }
             //Someone valat'd
             int valatChips = 20;
             if (prever)
                 valatChips = 30;
+            valatChips *= (int) Math.pow(2,getDoublers());//Flecking still doubles valat payouts
             if (valat) {
                 valatChips *= 2;
                 if (team1wontrick && valatTeam == 1 && !team2wontrick) {
@@ -396,11 +409,11 @@ public abstract class Table {
                         message("Team 2 pays " + valatChips + " chips. Team 1 valat'd them");
                     } else if (getTeam1().size() == 1) {
                         //Pavenost is alone, s/he valat'd them
-                        teamPay(getPovenost(), getTeam2(), valatChips);
+                        teamPay(getPovenost(), getTeam2(), -valatChips);
                         message("Team 2 pays " + valatChips + " chips, Pavenost valat'd you all");
                     } else {
                         //Team 2 is alone
-                        teamPay(getTeam2().get(0), getTeam1(), -valatChips);
+                        teamPay(getTeam2().get(0), getTeam1(), valatChips);
                         message("Team 2 pays " + valatChips + " chips. Team 1 valat'd you");
                     }
                 } else if (team2wontrick && valatTeam == 2 && !team1wontrick) {
@@ -409,11 +422,11 @@ public abstract class Table {
                         message("Team 1 pays " + valatChips + " chips. Team 2 valat'd them");
                     } else if (getTeam1().size() == 1) {
                         //Pavenost is alone, s/he valat'd them
-                        teamPay(getPovenost(), getTeam2(), -valatChips);
+                        teamPay(getPovenost(), getTeam2(), valatChips);
                         message("Team 1 pays " + valatChips + " chips, Pavenost got wrecked");
                     } else {
                         //Team 2 is alone
-                        teamPay(getTeam2().get(0), getTeam1(), valatChips);
+                        teamPay(getTeam2().get(0), getTeam1(), -valatChips);
                         message("Team 1 pays " + valatChips + " chips. Team 2 valat'd you");
                     }
                 } else {
@@ -426,11 +439,11 @@ public abstract class Table {
                             message("Team 1 pays " + valatChips + " chips. They lost a called valat");
                         } else if (getTeam1().size() == 1) {
                             //Pavenost is alone, s/he valat'd them
-                            teamPay(getPovenost(), getTeam2(), -valatChips);
-                            message("Pavenost pays " + valatChips + " chips. Pavenost was a bit prideful in that valata call");
+                            teamPay(getPovenost(), getTeam2(), valatChips);
+                            message("Pavenost pays " + valatChips + " chips. Pavenost was a bit prideful in that valat call");
                         } else {
                             //Team 2 is alone
-                            teamPay(getTeam2().get(0), getTeam1(), valatChips);
+                            teamPay(getTeam2().get(0), getTeam1(), -valatChips);
                             message("Team 1 pays " + valatChips + " chips. Team 2 wrecked your valat");
                         }
                     } else {
@@ -441,11 +454,11 @@ public abstract class Table {
                             message("Team 2 pays " + valatChips + " chips. They lost a called valat");
                         } else if (getTeam1().size() == 1) {
                             //Pavenost is alone, s/he valat'd them
-                            teamPay(getPovenost(), getTeam2(), valatChips);
-                            message("Team 2 pays " + valatChips + " chips. Pavenost stopped your valat. Also, YOU CALLED VALAT AND PAVENOST CALLED HIMSELF ON THE XIX, HOW DUMB ARE YOU???");
+                            teamPay(getPovenost(), getTeam2(), -valatChips);
+                            message("Team 2 pays " + valatChips + " chips. Pavenost stopped your valat.");
                         } else {
                             //Team 2 is alone
-                            teamPay(getTeam2().get(0), getTeam1(), -valatChips);
+                            teamPay(getTeam2().get(0), getTeam1(), valatChips);
                             message("Team 2 pays " + valatChips + " chips. Team 1 wrecked your valat");
                         }
                     }
@@ -458,11 +471,11 @@ public abstract class Table {
                     message("Team 2 pays " + valatChips + " chips. Team 1 valat'd them");
                 } else if (getTeam1().size() == 1) {
                     //Pavenost is alone, s/he valat'd them
-                    teamPay(getPovenost(), getTeam2(), valatChips);
+                    teamPay(getPovenost(), getTeam2(), -valatChips);
                     message("Team 2 pays " + valatChips + " chips, Pavenost valat'd you all");
                 } else {
                     //Team 2 is alone
-                    teamPay(getTeam2().get(0), getTeam1(), -valatChips);
+                    teamPay(getTeam2().get(0), getTeam1(), valatChips);
                     message("Team 2 pays " + valatChips + " chips. Team 1 valat'd you");
                 }
             } else {
@@ -473,11 +486,11 @@ public abstract class Table {
                     message("Team 1 pays " + valatChips + " chips. Team 2 valat'd them");
                 } else if (getTeam1().size() == 1) {
                     //Pavenost is alone, s/he got valat'd by them
-                    teamPay(getPovenost(), getTeam2(), -valatChips);
+                    teamPay(getPovenost(), getTeam2(), valatChips);
                     message("Team 1 pays " + valatChips + " chips, Pavenost got wrecked");
                 } else {
                     //Team 2 is alone
-                    teamPay(getTeam2().get(0), getTeam1(), valatChips);
+                    teamPay(getTeam2().get(0), getTeam1(), -valatChips);
                     message("Team 2 gets " + valatChips + " chips. Team 2 valat'd you all");
                 }
             }
@@ -557,12 +570,15 @@ public abstract class Table {
     public void fleck() {
         for (Player t2: getTeam2()) {
             if (t2.fleck()) {
+                message(t2 + " flecked!");
                 setDoublers(getDoublers()+1);
                 for (Player t1: getTeam1()) {
                     if (t1.fleck()) {
+                        message(t1 + " flecked back!");
                         setDoublers(getDoublers()+1);
                         for (Player t2t2 : getTeam2()) {
                             if (t2t2.fleck()) {
+                                message(t2t2 + " flecked again!");
                                 setDoublers(getDoublers()+1);
                                 break;
                             }
@@ -577,6 +593,7 @@ public abstract class Table {
     public void valat() {
         for (Player p : players) {
             if (p.valat()) {
+                message(p + " called valat!");
                 for (Player t1 : team1) {
                     if (t1==p) {
                         valatTeam = 1;
@@ -698,6 +715,7 @@ public abstract class Table {
         for (int i=0; i<players.length;i++) {
             if (players[i].hasCard("I")) {
                 if (players[i].pagat()) {
+                    message(players[i] + " called the I on the end");
                     IOTE = i;
                 }
                 break;
@@ -744,6 +762,7 @@ public abstract class Table {
         }
     }
     public void allPay(Player p, int payment) {
+        //3 pay, 1 earns
         for (int i = 0; i<4;i++) {
             if (!players[i].equals(p)) {players[i].payChips(-payment);}
         }
@@ -759,7 +778,7 @@ public abstract class Table {
         }
     }
     public void teamPay(Player pay, ArrayList<Player> getPaid, int amount) {
-        //USED FOR 2V2 ONLY! NOT FOR 3V1!
+        //1 pay, 3 earn
         pay.payChips(-amount*3);//One player pays
         for (Player p: getPaid) {
             p.payChips(amount);//3 players earn

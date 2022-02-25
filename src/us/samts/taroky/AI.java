@@ -276,7 +276,7 @@ public class AI extends Player {
         constructInputs(table);
         for (int i=0;i<12;i++) {inputs[i]=0;}
         inputs[9] = 1;
-        return determineOutputs(2) > 0.9;
+        return determineOutputs(2) > 0.99;
     }//Output 2
 
     @Override
@@ -402,28 +402,28 @@ public class AI extends Player {
     public boolean preverTalon(Table t) {
         constructInputs(table);
         for (int i=0;i<12;i++) {inputs[i]=0;}
-        return determineOutputs(7)>0.9;
+        return determineOutputs(7)>0.99;
     }//Output 7
 
     @Override
     public boolean fleck() {
         constructInputs(table);
         for (int i=0;i<12;i++) {inputs[i]=0;}
-        return determineOutputs(8)>0.9;
+        return determineOutputs(8)>0.99;
     }//Output 8
 
     @Override
     public boolean pagat() {
         constructInputs(table);
         for (int i=0;i<12;i++) {inputs[i]=0;}
-        return determineOutputs(9)>0.9;
+        return determineOutputs(9)>0.99;
     }//Output 9
 
     @Override
     public boolean valat() {
         constructInputs(table);
         for (int i=0;i<12;i++) {inputs[i]=0;}
-        return determineOutputs(10)>0.9;
+        return determineOutputs(10)>0.99;
     }//Output 10
 }
 
