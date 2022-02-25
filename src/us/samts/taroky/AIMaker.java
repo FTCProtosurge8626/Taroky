@@ -2,6 +2,7 @@ package us.samts.taroky;
 
 public class AIMaker extends Table {
     double[][][] initialSeed;
+    boolean playAgain;
 
     protected AIMaker(double[][][] seed)  {
         super(0);
@@ -10,13 +11,11 @@ public class AIMaker extends Table {
         getPlayers()[1] = new AI("Danny",1,this,seed,0.1);
         getPlayers()[2] = new AI("Humphrey",2,this,seed,0.1);
         getPlayers()[3] = new AI("Dianne",3,this,seed,0.1);
+        playAgain = true;
     }
-    public AIMaker(AI[] ai) {
+    protected AIMaker(boolean anotherGame)  {
         super(0);
-        getPlayers()[0] = ai[0];
-        getPlayers()[1] = ai[1];
-        getPlayers()[2] = ai[2];
-        getPlayers()[3] = ai[3];
+        playAgain = anotherGame;
     }
     protected AIMaker()  {
         super(0);
@@ -24,7 +23,20 @@ public class AIMaker extends Table {
         getPlayers()[1] = new AI("Danny",1,this);
         getPlayers()[2] = new AI("Humphrey",2,this);
         getPlayers()[3] = new AI("Dianne",3,this);
+        playAgain = true;
     }
+
+    public void setAI(AI[] ai) {
+        getPlayers()[0] = ai[0];
+        getPlayers()[1] = ai[1];
+        getPlayers()[2] = ai[2];
+        getPlayers()[3] = ai[3];
+    }
+    public AI[] getAI() {
+        return (AI[])getPlayers();
+    }
+
+    public Table getTable() {return this;}
 
     @Override
     public boolean anotherHand() {
@@ -42,7 +54,7 @@ public class AIMaker extends Table {
             }
             resetAI();
         }
-        return true;
+        return playAgain;
     }
 
     public void resetAI() {
