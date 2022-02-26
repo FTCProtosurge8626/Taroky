@@ -325,10 +325,21 @@ public class AI extends Player {
                 }
                 //Snipe out the lowest ranked card
                 int lowest = 0;
+                Card toDiscard = discardable.get(0);
                 for (int i=1;i<discardRank.length;i++) {
                     if (discardRank[lowest] > discardRank[i]) {
                         lowest = i;
+                        toDiscard = discardable.get(i);
                     }
+                }
+                for (int i=0;i<getHand().size();i++) {
+                    if (getHand().get(i)==toDiscard) {
+                        lowest = i;//Set the card to discard to the corresponding card in hand
+                        break;
+                    }
+                }
+                if (getHand().get(lowest).getSuit()== Card.Suit.TRUMP) {
+                    table.message(this + " discarded the " + getHand().get(lowest));
                 }
                 getWinnings().add(getHand().remove(lowest));
             }
