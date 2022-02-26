@@ -76,7 +76,7 @@ public class AITournament {
         int bestChips = 0;
         ArrayList<AI> players = new ArrayList<>();
         for (int i = 0; i < numTables; i++) {
-            players.addAll(List.of(tables[0].getAI()));
+            players.addAll(List.of(tables[i].getAI()));
         }
         for (AI a : players) {
             if (a.getChips() > bestChips)
