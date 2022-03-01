@@ -3,6 +3,7 @@ package us.samts.taroky;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.*;
+import java.util.ArrayList;
 
 public class PaintStuff extends Canvas {
     private int location;
@@ -35,8 +36,14 @@ public class PaintStuff extends Canvas {
         //g.drawImage(Card.getCardBack(),20,30,50, 100, null);
         //drawImage(g, Card.getCardBack(), 100, 200, 45);
     }
-    public void writeString(String toWrite, int player) {
-        if (player > 3 || player < 0) {throw new Error("Index OOB exception: bad player");}
+    public void drawMessages(Graphics g, ArrayList<String> toWrite) {
+        int drawLocation = Taroky.height();
+        for (String writing: toWrite) {
+            g.setFont(new Font("Comic Sans",Font.BOLD,12));
+            g.setColor(Color.BLACK);
+            g.drawString(writing,0,drawLocation);
+            drawLocation -= 50;
+        }
 
 
     }

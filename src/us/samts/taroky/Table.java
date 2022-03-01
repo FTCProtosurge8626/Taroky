@@ -103,9 +103,9 @@ public abstract class Table {
             getPlayers()[getDealer()].deal(cut(), this);
         }
         setPovenost(getLeader());
-        Thread.sleep(getWaitTime());
+        waitFor(getWaitTime());
         message(getLeader() + " is Povenost");
-        Thread.sleep(getWaitTime());
+        waitFor(getWaitTime());
     }
     public boolean preverCheck() throws InterruptedException {
         //Used to handle the Talon and point cards. Returns true if someone plays prever. Adds players to teams as well.
@@ -162,7 +162,7 @@ public abstract class Table {
             if (getLeaderLocation()!=prever) {getLeader().addWinnings(getTalon());} else {getPlayers()[playerOffset(getLeaderLocation(),1)].addWinnings(getTalon());}
             //Talon is now empty
         }//Talon
-        Thread.sleep(getWaitTime());
+        waitFor(getWaitTime());
         //Discard cards
         for (int i=0;i<4;i++) {
             getPlayers()[i].discard();
@@ -187,7 +187,7 @@ public abstract class Table {
                 }
             }
         }
-        Thread.sleep(getWaitTime());
+        waitFor(getWaitTime());
         //Check for money cards
         pointCards();
         valat();
@@ -202,7 +202,7 @@ public abstract class Table {
             message("Trick " + (i+1) + ":");
             setLeader(trick(getLeader(),i));//Go through 12 tricks
         }
-        Thread.sleep(getWaitTime());
+        waitFor(getWaitTime());
         boolean team1wontrick = false;
         boolean team2wontrick = false;
 
@@ -623,17 +623,17 @@ public abstract class Table {
         //First player plays a card
         trick.add(currentLeader.lead());
         message(currentLeader.toString() +" led the " + trick.get(0).toString());
-        Thread.sleep(getWaitTime()* 3L);
+        waitFor(getWaitTime()* 3L);
         setLeaderLocation(getLeader().equals(getPlayers()[0]) ? 0 : getLeader().equals(getPlayers()[1]) ? 1 : getLeader().equals(getPlayers()[2]) ? 2 : 3);
         trick.add(getPlayers()[playerOffset(getLeaderLocation(),1)].takeTurn(trick.get(0).getSuit()));
         message(getPlayers()[playerOffset(getLeaderLocation(),1)] + " played the " +trick.get(1).toString());
-        Thread.sleep(getWaitTime()* 3L);
+        waitFor(getWaitTime()* 3L);
         trick.add(getPlayers()[playerOffset(getLeaderLocation(),2)].takeTurn(trick.get(0).getSuit()));
         message(getPlayers()[playerOffset(getLeaderLocation(),2)] + " played the " +trick.get(2).toString());
-        Thread.sleep(getWaitTime()* 3L);
+        waitFor(getWaitTime()* 3L);
         trick.add(getPlayers()[playerOffset(getLeaderLocation(),3)].takeTurn(trick.get(0).getSuit()));
         message(getPlayers()[playerOffset(getLeaderLocation(),3)] + " played the " +trick.get(3).toString());
-        Thread.sleep(getWaitTime()* 3L);
+        waitFor(getWaitTime()* 3L);
         if (trickNum == 11) {
             setLostPagat(getIOTE() != -1);//If someone called the I then it's assumed lost unless they play it
             for (int i=0; i<trick.size();i++) {
@@ -707,9 +707,16 @@ public abstract class Table {
         }
         getPlayers()[playerOffset(getLeaderLocation(),winner)].winTrick(trick);
         message(getPlayers()[playerOffset(getLeaderLocation(),winner)] + " won the trick!\n");
-        Thread.sleep(getWaitTime());
+        waitFor(getWaitTime());
         trickWinners.add(getPlayers()[playerOffset(getLeaderLocation(),winner)]);
         return getPlayers()[playerOffset(getLeaderLocation(),winner)];
+    }
+    public void waitFor(long waitTime) {
+        try {
+            Thread.sleep(waitTime);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void iOnTheEnd() {

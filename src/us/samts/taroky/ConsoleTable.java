@@ -1,11 +1,10 @@
 package us.samts.taroky;
 
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ConsoleTable extends Table {
     private static boolean print;
-    private Scanner s;
+    private final Scanner s;
 
     public ConsoleTable() {
         super(100);
